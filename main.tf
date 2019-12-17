@@ -15,5 +15,6 @@
  */
 
 provider "aws" {
-  region = var.region
+  region  = var.region
+  profile = var.user_profile
 }
