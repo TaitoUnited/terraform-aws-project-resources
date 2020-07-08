@@ -15,11 +15,11 @@
  */
 
 resource "aws_ecr_repository" "image" {
-  count = var.env == "dev" && var.create_container_registry ? length(var.container_targets) : 0
-  name  = "${var.vc_repository}/${var.container_targets[count.index]}"
+  count = var.env == "dev" && var.create_container_registry ? length(var.containers) : 0
+  name  = "${var.vc_repository}/${var.containers[count.index]}"
 }
 
 resource "aws_ecr_repository" "builder" {
-  count = var.env == "dev" && var.create_container_registry ? length(var.container_targets) : 0
-  name  = "${var.vc_repository}/${var.container_targets[count.index]}-builder"
+  count = var.env == "dev" && var.create_container_registry ? length(var.containers) : 0
+  name  = "${var.vc_repository}/${var.containers[count.index]}-builder"
 }

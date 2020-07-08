@@ -56,7 +56,7 @@ variable "create_container_registry" {
   description = "True if container registry should be created."
 }
 
-variable "container_targets" {
+variable "containers" {
   type        = list(string)
   default     = []
   description = "Container names: e.g. [ \"client\", \"server\" ]"
