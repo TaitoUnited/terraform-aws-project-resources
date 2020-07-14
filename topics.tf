@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-terraform {
-  required_version = ">= 0.12"
+resource "aws_sns_topic" "topic" {
+  count = length(local.topicsById)
+  name  = values(local.topicsById)[count.index].name
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Taito United
+ * Copyright 2020 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
  */
 
 resource "aws_ecr_repository" "image" {
-  count = var.env == "dev" && var.create_container_registry ? length(var.containers) : 0
-  name  = "${var.vc_repository}/${var.containers[count.index]}"
+  count = length(local.containerRegistryTargets)
+  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}"
 }
 
 resource "aws_ecr_repository" "builder" {
-  count = var.env == "dev" && var.create_container_registry ? length(var.containers) : 0
-  name  = "${var.vc_repository}/${var.containers[count.index]}-builder"
+  count = length(local.containerRegistryTargets)
+  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}-builder"
 }

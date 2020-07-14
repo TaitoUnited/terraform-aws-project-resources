@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Taito United
+ * Copyright 2020 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-resource "aws_iam_role" "application" {
-  name = "${var.project}-${var.env}-application"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "lambda.amazonaws.com"
-      },
-      "Effect": "Allow",
-      "Sid": ""
-    }
-  ]
+output "gateway_id" {
+  value = aws_api_gateway_rest_api.gateway[*].id
 }
-EOF
+
+output "stage_name" {
+  value = aws_api_gateway_stage.gateway[*].stage_name
+}
+
+output "base_url" {
+  value = aws_api_gateway_deployment.gateway[*].invoke_url
+}
+
+output "domain" {
+  value = aws_api_gateway_domain_name.domain[*].domain_name
+}
+
+output "cloudfront_domain_name" {
+  value = aws_api_gateway_domain_name.domain[*].cloudfront_domain_name
+}
+
+output "cloudfront_zone_id" {
+  value = aws_api_gateway_domain_name.domain[*].cloudfront_zone_id
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Taito United
+ * Copyright 2020 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
-resource "aws_iam_user" "application" {
-  name = "${var.project}-${var.env}-application"
+resource "aws_iam_user" "service_account" {
+  count = length(local.serviceAccounts)
+  name  = local.serviceAccounts[count.index].id
 }
