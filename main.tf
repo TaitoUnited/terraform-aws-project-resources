@@ -77,7 +77,7 @@ locals {
   functionsWithPolicyById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_function_permissions && service.type == "function" && try(service.awsPolicy, null) != null,
+    if var.create_function_permissions && service.type == "function" && try(service.awsPolicy, null) != null
   }
 
   databasesById = {
