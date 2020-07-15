@@ -66,7 +66,7 @@ resource "aws_iam_user_policy_attachment" "bucket_object_viewer_permission" {
 # Functions
 
 resource "aws_iam_role_policy" "function_aws_policy" {
-  count = length(local.functionsForPermissionsById)
+  count = length(local.functionsWithPolicyById)
   role = aws_iam_role.function[count.index].name
   policy = jsonencode(values(local.functionsForPermissionsById)[count.index].awsPolicy)
 }

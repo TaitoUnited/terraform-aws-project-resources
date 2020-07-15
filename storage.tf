@@ -50,6 +50,7 @@ resource "aws_s3_bucket" "bucket" {
       days = 0
       storage_class = (
         try(values(local.bucketsById)[count.index].storageClass, null) != null
+        && try(values(local.bucketsById)[count.index].storageClass, null) != "STANDARD_IA"
           ? try(values(local.bucketsById)[count.index].storageClass, null)
           : "GLACIER"
       )

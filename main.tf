@@ -74,6 +74,12 @@ locals {
     if var.create_function_permissions && service.type == "function"
   }
 
+  functionsWithPolicyById = {
+    for name, service in local.servicesById:
+    name => service
+    if var.create_function_permissions && service.type == "function" && try(service.awsPolicy, null) != null,
+  }
+
   databasesById = {
     for name, service in local.servicesById:
     name => service
@@ -114,21 +120,36 @@ locals {
 
   bucketAdmins = flatten([
     for service in local.bucketsById: [
-      for user in try(service.admins, []):
+      for user in try(
+        service.admins != null
+        ? service.admins
+        : [],
+        []
+      ):
       { bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectAdmins = flatten([
     for service in local.bucketsById: [
-      for user in try(service.objectAdmins, []):
+      for user in try(
+        service.objectAdmins != null
+        ? service.objectAdmins
+        : [],
+        []
+      ):
       { bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectViewers = flatten([
     for service in local.bucketsById: [
-      for user in try(service.objectViewers, []):
+      for user in try(
+        service.objectViewers != null
+        ? service.objectViewers
+        : [],
+        []
+      ):
       { bucketId: service.id, userId: user.id }
     ]
   ])
