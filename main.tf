@@ -27,7 +27,12 @@ locals {
 
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"
 
-  serviceAccounts = var.create_service_accounts ? try(var.variables.serviceAccounts, []) : []
+  serviceAccounts = var.create_service_accounts ? try(
+    var.variables.serviceAccounts != null
+    ? var.variables.serviceAccounts
+    : [],
+    []
+  ) : []
 
   ingress = try(var.variables.ingress, { enabled: false })
 
