@@ -16,7 +16,6 @@
 
 resource "aws_iam_role" "gateway" {
   name = "${var.project}-${var.env}-gateway"
-  tags = local.tags
 
   # Create Trust Policy for API Gateway
   assume_role_policy = <<EOF
@@ -38,7 +37,6 @@ resource "aws_iam_role" "gateway" {
 
 resource "aws_iam_role" "cicd" {
   name = "${var.project}-${var.env}-cicd"
-  tags = local.tags
 
   assume_role_policy = <<EOF
 {
