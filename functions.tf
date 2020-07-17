@@ -89,15 +89,15 @@ EOF
 /* Routing */
 
 resource "aws_api_gateway_resource" "function_parent_path" {
-  count = length(local.gatewayFunctions)
+  count = length(local.gatewayFunctionsById)
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   parent_id   = aws_api_gateway_rest_api.gateway[0].root_resource_id
-  path_part   = replace(values(local.gatewayFunctions)[count.index].path, "/", "")
+  path_part   = replace(values(local.gatewayFunctionsById)[count.index].path, "/", "")
 }
 
 resource "aws_api_gateway_resource" "function_path" {
-  count = length(local.gatewayFunctions)
+  count = length(local.gatewayFunctionsById)
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   parent_id   = aws_api_gateway_resource.function_parent_path[count.index].id
@@ -105,7 +105,7 @@ resource "aws_api_gateway_resource" "function_path" {
 }
 
 resource "aws_api_gateway_method" "function_path" {
-  count = length(local.gatewayFunctions)
+  count = length(local.gatewayFunctionsById)
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
   resource_id   = aws_api_gateway_resource.function_path[count.index].id
@@ -114,7 +114,7 @@ resource "aws_api_gateway_method" "function_path" {
 }
 
 resource "aws_api_gateway_integration" "function" {
-  count = length(local.gatewayFunctions)
+  count = length(local.gatewayFunctionsById)
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   resource_id = aws_api_gateway_method.function_path[count.index].resource_id
@@ -123,6 +123,6 @@ resource "aws_api_gateway_integration" "function" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.function[
-      index(keys(local.functionsById), keys(local.gatewayFunctions)[count.index])
+      index(keys(local.functionsById), keys(local.gatewayFunctionsById)[count.index])
     ].invoke_arn
 }

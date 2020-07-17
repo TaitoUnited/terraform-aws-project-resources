@@ -157,7 +157,7 @@ locals {
     ]
   ])
 
-  containerRegistryTargets = (
+  containerRegistryTargetsById = (
     var.create_container_image_repositories
       ? distinct(concat(var.additional_container_images, keys({
           for name, service in local.servicesById:
@@ -167,7 +167,7 @@ locals {
       : []
   )
 
-  gatewayFunctions = {
+  gatewayFunctionsById = {
     for name, service in local.servicesById:
     name => service
     if var.create_gateway && local.ingress.enabled && service.type == "function" && try(service.path, "") != ""
@@ -192,7 +192,7 @@ locals {
   }
 
   gatewayEnabled = length(concat(
-    values(local.gatewayFunctions),
+    values(local.gatewayFunctionsById),
     values(local.gatewayStaticContentsById),
   )) > 0
 

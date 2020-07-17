@@ -120,7 +120,7 @@ data "aws_iam_policy_document" "secretreader" {
 # API Gateway
 
 resource "aws_lambda_permission" "apigw" {
-  count = local.gatewayEnabled ? length(local.gatewayFunctions) : 0
+  count = local.gatewayEnabled ? length(local.gatewayFunctionsById) : 0
 
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"

@@ -15,11 +15,11 @@
  */
 
 resource "aws_ecr_repository" "image" {
-  count = length(local.containerRegistryTargets)
-  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}"
+  count = length(local.containerRegistryTargetsById)
+  name  = "${var.container_image_repository_path}/${local.containerRegistryTargetsById[count.index].name}"
 }
 
 resource "aws_ecr_repository" "builder" {
-  count = length(local.containerRegistryTargets)
-  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}-builder"
+  count = length(local.containerRegistryTargetsById)
+  name  = "${var.container_image_repository_path}/${local.containerRegistryTargetsById[count.index].name}-builder"
 }
