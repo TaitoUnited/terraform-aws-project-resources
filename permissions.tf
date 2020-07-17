@@ -18,8 +18,8 @@
 
 resource "aws_iam_role_policy_attachment" "cicd_policies" {
   depends_on = [ aws_iam_role.cicd ]
-  count      = length(var.cicd_policies)
-  role       = aws_iam_role.cicd.name
+  count      = var.create_service_accounts ? length(var.cicd_policies) : 0
+  role       = aws_iam_role.cicd[0].name
   policy_arn = var.cicd_policies[count.index]
 }
 
@@ -27,8 +27,8 @@ resource "aws_iam_role_policy_attachment" "cicd_policies" {
 
 resource "aws_iam_role_policy_attachment" "gateway_policies" {
   depends_on = [ aws_iam_role.cicd ]
-  count      = length(var.gateway_policies)
-  role       = aws_iam_role.gateway.name
+  count      = var.create_service_accounts ? length(var.gateway_policies) : 0
+  role       = aws_iam_role.gateway[0].name
   policy_arn = var.gateway_policies[count.index]
 }
 
