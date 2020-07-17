@@ -14,6 +14,24 @@
  * limitations under the License.
  */
 
+# CI/CD
+
+resource "aws_iam_role_policy_attachment" "cicd_policies" {
+  depends_on = [ aws_iam_role.cicd ]
+  count      = length(var.cicd_policies)
+  role       = aws_iam_role.cicd.name
+  policy_arn = var.cicd_policies[count.index]
+}
+
+# Gateway role
+
+resource "aws_iam_role_policy_attachment" "gateway_policies" {
+  depends_on = [ aws_iam_role.cicd ]
+  count      = length(var.gateway_policies)
+  role       = aws_iam_role.gateway.name
+  policy_arn = var.gateway_policies[count.index]
+}
+
 # Topics
 
 resource "aws_iam_user_policy_attachment" "topic_publish_permission" {

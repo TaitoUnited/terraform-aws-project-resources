@@ -21,8 +21,6 @@ provider "aws" {
 
 locals {
 
-  gateway_asset_reader = var.gateway_asset_reader != "" ? var.gateway_asset_reader :  "arn:aws:iam::${var.account_id}:role/${var.zone_name}-gateway"
-
   secret_resource_path = var.secret_resource_path != "" ? var.secret_resource_path : "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.zone_name}/${var.namespace}"
 
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"

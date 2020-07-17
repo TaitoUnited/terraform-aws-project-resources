@@ -116,13 +116,13 @@ variable "region" {
 variable "zone_name" {
   type = string
   default = ""
-  description = "Name of the zone (e.g. \"my-zone\"). It is required if gateway_asset_reader or secret_resource_path has not been set. "
+  description = "Name of the zone (e.g. \"my-zone\"). It is required if secret_resource_path has not been set. "
 }
 
 variable "project" {
   type = string
   default = ""
-  description = "Name of the project (e.g. \"my-project\"). Required if secret_resource_path has not been set"
+  description = "Name of the project (e.g. \"my-project\")"
 }
 
 variable "namespace" {
@@ -192,12 +192,19 @@ variable "elasticache_security_group_ids" {
   description = "Default security group ids for elasticache. Required if create_in_memory_databases is true."
 }
 
-# Credentials
+# Permissions
 
-variable "gateway_asset_reader" {
-  type    = string
-  default = ""
-  description = "Role used by API Gateway to read static assets from assets bucket. If not set, the following is used by default: arn:aws:iam::ACCOUNT_ID:role/ZONE_NAME-gateway"
+variable "cicd_policies" {
+  type    = list(string)
+  default = []
+  description = "Policy ARN:s attached to the CI/CD role. The policies should
+  provide access to Kubernetes, assets bucket, functions bucket, secrets, etc."
+}
+
+variable "gateway_policies" {
+  type    = list(string)
+  default = []
+  description = "Role used by API Gateway to read static assets from assets bucket."
 }
 
 # Secrets

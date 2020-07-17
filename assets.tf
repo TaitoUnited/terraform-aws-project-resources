@@ -37,7 +37,7 @@ resource "aws_api_gateway_integration" "static_root_path" {
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
   uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayRootStaticContentsById)[count.index]}/index.html"
-  credentials             = local.gateway_asset_reader
+  credentials             = aws_iam_role.gateway.arn
 }
 
 /* Parent path routing: /PATH/ */
@@ -75,7 +75,7 @@ resource "aws_api_gateway_integration" "static_parent_path" {
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
   uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayChildStaticContentsById)[count.index]}/index.html"
-  credentials             = local.gateway_asset_reader
+  credentials             = aws_iam_role.gateway.arn
 }
 
 /* Path routing: /PATH/{proxy+} */
@@ -124,7 +124,7 @@ resource "aws_api_gateway_integration" "static_path" {
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
   uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayStaticContentsById)[count.index]}/index.html"
-  credentials             = local.gateway_asset_reader
+  credentials             = aws_iam_role.gateway.arn
 }
 
 /* Responses: / */
