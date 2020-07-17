@@ -157,7 +157,7 @@ locals {
     ]
   ])
 
-  containerRegistryTargetsById = (
+  containerRegistryTargets = (
     var.create_container_image_repositories
       ? distinct(concat(var.additional_container_images, keys({
           for name, service in local.servicesById:
