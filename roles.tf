@@ -36,6 +36,11 @@ resource "aws_iam_role" "gateway" {
   EOF
 }
 
+data "aws_iam_role" "gateway" {
+  depends_on = [ aws_iam_role.gateway ]
+  name = "${var.project}-${var.env}-gateway"
+}
+
 resource "aws_iam_role" "cicd" {
   count = var.create_service_accounts ? 1 : 0
   name = "${var.project}-${var.env}-cicd"

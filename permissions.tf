@@ -26,7 +26,7 @@ resource "aws_iam_role_policy_attachment" "cicd_policies" {
 # Gateway role
 
 resource "aws_iam_role_policy_attachment" "gateway_policies" {
-  depends_on = [ aws_iam_role.cicd ]
+  depends_on = [ aws_iam_role.gateway ]
   count      = var.create_service_accounts ? length(var.gateway_policies) : 0
   role       = aws_iam_role.gateway[0].name
   policy_arn = var.gateway_policies[count.index]
