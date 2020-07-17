@@ -197,8 +197,7 @@ variable "elasticache_security_group_ids" {
 variable "cicd_policies" {
   type    = list(string)
   default = []
-  description = "Policy ARN:s attached to the CI/CD role. The policies should
-  provide access to Kubernetes, assets bucket, functions bucket, secrets, etc."
+  description = "Policy ARN:s attached to the CI/CD role. The policies should provide access to Kubernetes, assets bucket, functions bucket, secrets, etc."
 }
 
 variable "gateway_policies" {
