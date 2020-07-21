@@ -25,12 +25,11 @@ locals {
 
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"
 
-  serviceAccounts = var.create_service_accounts ? try(
-    var.variables.serviceAccounts != null
-    ? var.variables.serviceAccounts
-    : [],
-    []
-  ) : []
+  serviceAccounts = (
+    var.create_service_accounts && try(var.variables.serviceAccounts, null) != null
+    ? try(var.variables.serviceAccounts, [])
+    : []
+  )
 
   ingress = try(var.variables.ingress, { enabled: false })
 
@@ -47,8 +46,14 @@ locals {
     )
   ]
 
+  services = (
+    try(var.variables.services, null) != null
+    ? try(var.variables.services, {})
+    : {}
+  )
+
   servicesById = {
-    for id, service in var.variables.services:
+    for id, service in local.services:
     id => merge(service, { id: id })
   }
 
