@@ -144,7 +144,7 @@ With `create_*` variables you can choose which resources are created/updated in 
 And choose to update gateway, containers, and functions on every deployment in your CI/CD pipeline:
 
 ```
-  create_gateway                      = true
+  create_ingress                      = true
   create_containers                   = true
   create_functions                    = true
   create_function_permissions         = true
@@ -166,3 +166,5 @@ This module creates only resources for one project. That is, such resources shou
 * [Digital Ocean Kubernetes infrastructure](https://registry.terraform.io/modules/TaitoUnited/kubernetes-infrastructure/digitalocean)
 
 > TIP: This module is used by [project templates](https://taitounited.github.io/taito-cli/templates/#project-templates) of [Taito CLI](https://taitounited.github.io/taito-cli/). See the [full-stack-template](https://github.com/TaitoUnited/full-stack-template) as an example on how to use this module.
+
+Contributions are welcome! This module should include support for the most commonly used AWS services. For more specific cases, the YAML can be extended with additional Terraform modules.

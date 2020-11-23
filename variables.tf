@@ -52,7 +52,7 @@ variable "create_topics" {
   description = "If true, topics are created."
 }
 
-variable "create_gateway" {
+variable "create_ingress" {
   type        = bool
   default     = false
   description = "If true, API Gateway is created."
@@ -143,7 +143,7 @@ variable "env" {
 variable "build_image_tag" {
   type = string
   default = "latest"
-  description = "For example git commit hash (ddee8c8da71393b4b2ef95de507358abe54d7e78). Required if create_gateway or create_functions is true."
+  description = "For example git commit hash (ddee8c8da71393b4b2ef95de507358abe54d7e78). Required if create_ingress or create_functions is true."
 }
 
 # Container image repositories
@@ -225,13 +225,13 @@ variable "secret_name_path" {
 variable "static_assets_bucket" {
   type    = string
   default = ""
-  description = "Storage bucket for static assets (html, css, js). Required if create_gateway is true."
+  description = "Storage bucket for static assets (html, css, js). Required if create_ingress is true."
 }
 
 variable "static_assets_path" {
   type    = string
   default = ""
-  description = "Storage bucket path for static assets (html, css, js). Required if create_gateway is true."
+  description = "Storage bucket path for static assets (html, css, js). Required if create_ingress is true."
 }
 
 variable "functions_bucket" {
@@ -254,9 +254,9 @@ variable "uptime_channels" {
   description = "SNS topics used to send alert notifications (e.g. \"arn:aws:sns:us-east-1:0123456789:my-zone-uptimez\")"
 }
 
-# Additional variables as a json/yaml
+# Resources as a json/yaml
 
-variable "variables" {
-  type    = any
-  description = "Ingress and services as json/yaml. See README.md for format."
+variable "resources" {
+  type        = any
+  description = "Resources as JSON (see README.md). You can read values from a YAML file with yamldecode()."
 }
