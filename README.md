@@ -1,5 +1,7 @@
 # AWS project resources
 
+TODO: replace count with for_each!
+
 Provides AWS resources typically required by projects. The resources are defined in a cloud provider agnostic and developer friendly YAML format. An example:
 
 ```
@@ -97,9 +99,10 @@ stack:
       name: my-project-prod
       location: us-east-1
       storageClass: STANDARD_IA
-      cors:
-        - domain: https://myproject.mydomain.com
-        - domain: https://www.myproject.mydomain.com
+      corsRules:
+        - allowedOrigins:
+          - https://myproject.mydomain.com
+          - https://www.myproject.mydomain.com
       # Object lifecycle
       versioning: true
       versioningRetainDays: 60
@@ -158,13 +161,20 @@ Similar YAML format is used also by the following modules:
 * [Digital Ocean project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/digitalocean)
 * [Full-stack template (Helm chart for Kubernetes)](https://github.com/TaitoUnited/taito-charts/tree/master/full-stack)
 
-This module creates only resources for one project. That is, such resources should already exist that are shared among multiple projects (e.g. users, roles, vpc networks, database clusters). You can create the shared infrastructure with the following modules. The modules are Kubernetes-oriented, but you can also choose to leave Kubernetes out.
+NOTE: This module creates resources for only one project environment. That is, such resources should already exist that are shared among multiple projects or project environments (e.g. users, roles, vpc networks, kubernetes, database clusters). You can use the following modules to create the shared infrastructure:
 
-* [AWS Kubernetes infrastructure](https://registry.terraform.io/modules/TaitoUnited/kubernetes-infrastructure/aws)
-* [Azure Kubernetes infrastructure](https://registry.terraform.io/modules/TaitoUnited/kubernetes-infrastructure/azurerm)
-* [Google Cloud Kubernetes infrastructure](https://registry.terraform.io/modules/TaitoUnited/kubernetes-infrastructure/google)
-* [Digital Ocean Kubernetes infrastructure](https://registry.terraform.io/modules/TaitoUnited/kubernetes-infrastructure/digitalocean)
+- [Admin](https://registry.terraform.io/modules/TaitoUnited/admin/aws)
+- [DNS](https://registry.terraform.io/modules/TaitoUnited/dns/aws)
+- [Network](https://registry.terraform.io/modules/TaitoUnited/network/aws)
+- [Compute](https://registry.terraform.io/modules/TaitoUnited/compute/aws)
+- [Kubernetes](https://registry.terraform.io/modules/TaitoUnited/kubernetes/aws)
+- [Databases](https://registry.terraform.io/modules/TaitoUnited/databases/aws)
+- [Storage](https://registry.terraform.io/modules/TaitoUnited/storage/aws)
+- [Monitoring](https://registry.terraform.io/modules/TaitoUnited/monitoring/aws)
+- [Integrations](https://registry.terraform.io/modules/TaitoUnited/integrations/aws)
+- [PostgreSQL privileges](https://registry.terraform.io/modules/TaitoUnited/privileges/postgresql)
+- [MySQL privileges](https://registry.terraform.io/modules/TaitoUnited/privileges/mysql)
 
 > TIP: This module is used by [project templates](https://taitounited.github.io/taito-cli/templates/#project-templates) of [Taito CLI](https://taitounited.github.io/taito-cli/). See the [full-stack-template](https://github.com/TaitoUnited/full-stack-template) as an example on how to use this module.
 
-Contributions are welcome! This module should include support for the most commonly used AWS services. For more specific cases, the YAML can be extended with additional Terraform modules.
+Contributions are welcome! This module should include implementations for the most commonly used AWS services. For more specific cases, the YAML can be extended with additional Terraform modules.

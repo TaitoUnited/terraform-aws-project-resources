@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Taito United
+ * Copyright 2021 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,13 @@ variable "create_domain_certificate" {
   default     = false
   description = "If true, a domain certificate is created for each domain."
 }
+
+# NOTE: NOT SUPPORTED BY THE AWS MODULE
+# variable "create_build_trigger" {
+#   type        = bool
+#   default     = false
+#   description = "If true, build trigger will be created."
+# }
 
 variable "create_storage_buckets" {
   type        = bool
@@ -82,11 +89,39 @@ variable "create_service_accounts" {
   description = "If true, service accounts are created."
 }
 
+# NOTE: NOT SUPPORTED BY THE AWS MODULE
+# variable "create_service_account_roles" {
+#   type        = bool
+#   default     = false
+#   description = "If true, service account IAM permissions are created. (TODO)"
+# }
+
+# NOTE: NOT SUPPORTED BY THE AWS MODULE
+# variable "create_api_keys" {
+#   type        = bool
+#   default     = false
+#   description = "If true, api keys are created. (TODO)"
+# }
+
 variable "create_uptime_checks" {
   type        = bool
   default     = false
   description = "If true, uptime check and alert is created for each service with uptime path set."
 }
+
+# NOTE: NOT SUPPORTED BY THE AWS MODULE
+# variable "create_log_alert_metrics" {
+#   type        = bool
+#   default     = false
+#   description = "If true, log metrics are created for all log alerts. (TODO)"
+# }
+
+# NOTE: NOT SUPPORTED BY THE AWS MODULE
+# variable "create_log_alert_policies" {
+#   type        = bool
+#   default     = false
+#   description = "If true, alert policies are created for log alerts (TODO)"
+# }
 
 variable "create_container_image_repositories" {
   type        = bool
@@ -111,7 +146,7 @@ variable "region" {
   description = "AWS region."
 }
 
-# Labels
+# Project
 
 variable "zone_name" {
   type = string
@@ -130,8 +165,6 @@ variable "namespace" {
   default = ""
   description = "Namespace for the project environment (e.g. \"my-project-dev\"). Required if secret_resource_path has not been set"
 }
-
-# Environment info
 
 variable "env" {
   type        = string
@@ -257,6 +290,89 @@ variable "uptime_channels" {
 # Resources as a json/yaml
 
 variable "resources" {
-  type        = any
+  type = object({
+    backupEnabled = optional(bool)
+    uptimeEnabled = optional(bool)
+
+    # NOTE: NOT SUPPORTED BY THE AWS MODULE
+    # alerts = optional(list(object({
+    #   name = string
+    #   type = string
+    #   channels = list(string)
+    #   rule = string
+    # })))
+
+    serviceAccounts = optional(list(object({
+      id = string
+      # NOTE: NOT SUPPORTED BY THE AWS MODULE
+      # roles = list(string)
+    })))
+
+    # NOTE: NOT SUPPORTED BY THE AWS MODULE
+    # apiKeys = optional(list(object({
+    #   name = string
+    #   services = list(string)
+    #   origins = list(string)
+    # })))
+
+    ingress = optional(object({
+      class = optional(string)
+      enabled = optional(bool)
+      createMainDomain = optional(bool)
+      domains = list(object({
+        name = string
+        altDomains = list(object({
+          name = string
+        }))
+      }))
+    }))
+
+    services = optional(map(object({
+      type = string
+      machineType = optional(string)
+      name = optional(string)
+      location = optional(string)
+      storageClass = optional(string)
+      corsRules = optional(list(object({
+        allowedOrigins = list(string)
+        allowedMethods = optional(list(string))
+        exposeHeaders = optional(list(string))
+        maxAgeSeconds = optional(number)
+      })))
+      versioningEnabled = optional(bool)
+      versioningRetainDays = optional(number)
+      lockRetainDays = optional(number)
+      transitionRetainDays = optional(number)
+      transitionStorageClass = optional(string)
+      autoDeletionRetainDays = optional(number)
+      replicationBucket = optional(string)
+      backupRetainDays = optional(number)
+      backupLocation = optional(string)
+      backupLock = optional(bool)
+      admins = optional(list(object({
+        id = string
+      })))
+      objectAdmins = optional(list(object({
+        id = string
+      })))
+      objectViewers = optional(list(object({
+        id = string
+      })))
+      replicas = optional(number)
+      path = optional(string)
+      uptimePath = optional(string)
+      timeout = optional(number)
+      runtime = optional(string)
+      memoryRequest = optional(number)
+      secrets = optional(map(string))
+      env = optional(map(string))
+      publishers = optional(list(object({
+        id = string
+      })))
+      subscribers = optional(list(object({
+        id = string
+      })))
+    }))
+  }))
   description = "Resources as JSON (see README.md). You can read values from a YAML file with yamldecode()."
 }

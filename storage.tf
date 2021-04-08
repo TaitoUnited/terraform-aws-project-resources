@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Taito United
+ * Copyright 2021 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 resource "aws_s3_bucket" "bucket" {
   count  = length(local.bucketsById)
   bucket = values(local.bucketsById)[count.index].name
-  region = values(local.bucketsById)[count.index].location
+  # DEPRECATED: region = values(local.bucketsById)[count.index].location
 
   tags = {
     project = var.project
@@ -43,15 +43,15 @@ resource "aws_s3_bucket" "bucket" {
   lifecycle_rule {
     id = "storageClass"
     enabled = (
-      try(values(local.bucketsById)[count.index].storageClass, null) != null
-      && try(values(local.bucketsById)[count.index].storageClass, null) != "STANDARD_IA"
+      coalesce(values(local.bucketsById)[count.index].storageClass, null) != null
+      && coalesce(values(local.bucketsById)[count.index].storageClass, null) != "STANDARD_IA"
     )
     transition {
       days = 0
       storage_class = (
-        try(values(local.bucketsById)[count.index].storageClass, null) != null
-        && try(values(local.bucketsById)[count.index].storageClass, null) != "STANDARD_IA"
-          ? try(values(local.bucketsById)[count.index].storageClass, null)
+        coalesce(values(local.bucketsById)[count.index].storageClass, null) != null
+        && coalesce(values(local.bucketsById)[count.index].storageClass, null) != "STANDARD_IA"
+          ? coalesce(values(local.bucketsById)[count.index].storageClass, null)
           : "GLACIER"
       )
     }
@@ -59,12 +59,12 @@ resource "aws_s3_bucket" "bucket" {
 
   lifecycle_rule {
     id = "transition"
-    enabled = try(values(local.bucketsById)[count.index].transitionRetainDays, null) != null
+    enabled = coalesce(values(local.bucketsById)[count.index].transitionRetainDays, null) != null
     transition {
-      days = try(values(local.bucketsById)[count.index].transitionRetainDays, null)
+      days = coalesce(values(local.bucketsById)[count.index].transitionRetainDays, null)
       storage_class = (
-        try(values(local.bucketsById)[count.index].transitionStorageClass, null) != null
-          ? try(values(local.bucketsById)[count.index].transitionStorageClass, null)
+        coalesce(values(local.bucketsById)[count.index].transitionStorageClass, null) != null
+          ? coalesce(values(local.bucketsById)[count.index].transitionStorageClass, null)
           : "GLACIER"
       )
     }
@@ -72,17 +72,17 @@ resource "aws_s3_bucket" "bucket" {
 
   lifecycle_rule {
     id = "versioning"
-    enabled = try(values(local.bucketsById)[count.index].versioningRetainDays, null) != null
+    enabled = coalesce(values(local.bucketsById)[count.index].versioningRetainDays, null) != null
     noncurrent_version_expiration {
-      days = try(values(local.bucketsById)[count.index].versioningRetainDays, null)
+      days = coalesce(values(local.bucketsById)[count.index].versioningRetainDays, null)
     }
   }
 
   lifecycle_rule {
     id = "autoDeletion"
-    enabled = try(values(local.bucketsById)[count.index].autoDeletionRetainDays, null) != null
+    enabled = coalesce(values(local.bucketsById)[count.index].autoDeletionRetainDays, null) != null
     expiration {
-      days = try(values(local.bucketsById)[count.index].autoDeletionRetainDays, null)
+      days = coalesce(values(local.bucketsById)[count.index].autoDeletionRetainDays, null)
     }
   }
 

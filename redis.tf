@@ -1,5 +1,5 @@
 /**
- * Copyright 2020 Taito United
+ * Copyright 2021 Taito United
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ resource "aws_elasticache_subnet_group" "redis" {
 resource "aws_elasticache_replication_group" "redis" {
   count                         = length(local.redisDatabasesById)
 
-  automatic_failover_enabled    = try(values(local.redisDatabasesById)[count.index].replicas, 1) > 1
-  availability_zones            = try(values(local.redisDatabasesById)[count.index].zones, null)
+  automatic_failover_enabled    = coalesce(values(local.redisDatabasesById)[count.index].replicas, 1) > 1
+  availability_zones            = coalesce(values(local.redisDatabasesById)[count.index].zones, null)
   replication_group_id          = values(local.redisDatabasesById)[count.index].name
   replication_group_description = values(local.redisDatabasesById)[count.index].name
-  node_type                     = try(values(local.redisDatabasesById)[count.index].machineType, "cache.t2.small")
-  number_cache_clusters         = try(values(local.redisDatabasesById)[count.index].replicas, 1)
+  node_type                     = coalesce(values(local.redisDatabasesById)[count.index].machineType, "cache.t2.small")
+  number_cache_clusters         = coalesce(values(local.redisDatabasesById)[count.index].replicas, 1)
   parameter_group_name          = "default.redis5.0"
   port                          = 6379
 
