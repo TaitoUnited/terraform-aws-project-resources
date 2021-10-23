@@ -96,13 +96,18 @@ stack:
 
     bucket:
       type: bucket
-      name: my-project-prod
+      name: my-bucket-prod
       location: us-east-1
       storageClass: STANDARD_IA
       corsRules:
         - allowedOrigins:
           - https://myproject.mydomain.com
           - https://www.myproject.mydomain.com
+      queues: # TODO: implement
+        - name: my-bucket-prod
+          events:
+            - s3:ObjectCreated:Put
+            - s3:ObjectRemoved:Delete
       # Object lifecycle
       versioning: true
       versioningRetainDays: 60
@@ -155,11 +160,11 @@ And choose to update gateway, containers, and functions on every deployment in y
 
 Similar YAML format is used also by the following modules:
 
-* [AWS project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/aws)
-* [Azure project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/azurerm)
-* [Google Cloud project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/google)
-* [Digital Ocean project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/digitalocean)
-* [Full-stack template (Helm chart for Kubernetes)](https://github.com/TaitoUnited/taito-charts/tree/master/full-stack)
+- [AWS project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/aws)
+- [Azure project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/azurerm)
+- [Google Cloud project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/google)
+- [Digital Ocean project resources](https://registry.terraform.io/modules/TaitoUnited/project-resources/digitalocean)
+- [Full-stack template (Helm chart for Kubernetes)](https://github.com/TaitoUnited/taito-charts/tree/master/full-stack)
 
 NOTE: This module creates resources for only one project environment. That is, such resources should already exist that are shared among multiple projects or project environments (e.g. users, roles, vpc networks, kubernetes, database clusters). You can use the following modules to create the shared infrastructure:
 

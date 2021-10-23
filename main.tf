@@ -26,7 +26,7 @@ locals {
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"
 
   serviceAccounts = (
-    var.create_service_accounts && coalesce(var.resources.serviceAccounts, null) != null
+    var.create_service_accounts
     ? coalesce(var.resources.serviceAccounts, [])
     : []
   )
@@ -46,11 +46,7 @@ locals {
     )
   ]
 
-  services = (
-    coalesce(var.resources.services, null) != null
-    ? coalesce(var.resources.services, {})
-    : {}
-  )
+  services = coalesce(var.resources.services, {})
 
   servicesById = {
     for id, service in local.services:
@@ -61,7 +57,7 @@ locals {
   uptimeTargetsById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_uptime_checks && local.uptimeEnabled && coalesce(service.uptimePath, null) != null
+    if var.create_uptime_checks && local.uptimeEnabled && service.uptimePath != null
   }
 
   containersById = {
@@ -85,7 +81,7 @@ locals {
   functionsWithPolicyById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_function_permissions && service.type == "function" && coalesce(service.awsPolicy, null) != null
+    if var.create_function_permissions && service.type == "function" && service.awsPolicy != null
   }
 
   databasesById = {
@@ -128,36 +124,21 @@ locals {
 
   bucketAdmins = flatten([
     for service in local.bucketsById: [
-      for user in coalesce(
-        service.admins != null
-        ? service.admins
-        : [],
-        []
-      ):
+      for user in coalesce(service.admins, []):
       { bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectAdmins = flatten([
     for service in local.bucketsById: [
-      for user in coalesce(
-        service.objectAdmins != null
-        ? service.objectAdmins
-        : [],
-        []
-      ):
+      for user in coalesce(service.objectAdmins, []):
       { bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectViewers = flatten([
     for service in local.bucketsById: [
-      for user in coalesce(
-        service.objectViewers != null
-        ? service.objectViewers
-        : [],
-        []
-      ):
+      for user in coalesce(service.objectViewers, []):
       { bucketId: service.id, userId: user.id }
     ]
   ])
