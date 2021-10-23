@@ -15,32 +15,36 @@
  */
 
 data "aws_acm_certificate" "domain_cert" {
-  count           = local.gatewayEnabled ? length(local.domains) : 0
-  domain          = local.domains[count.index].name
+  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+
+  domain          = each.value.name
 }
 
 resource "aws_api_gateway_domain_name" "domain" {
-  count           = local.gatewayEnabled ? length(local.domains) : 0
-  domain_name     = local.domains[count.index].name
-  certificate_arn = data.aws_acm_certificate.domain_cert[count.index].arn
+  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+
+  domain_name     = each.value.name
+  certificate_arn = data.aws_acm_certificate.domain_cert[each.value.name].arn
 }
 
 resource "aws_api_gateway_base_path_mapping" "base_path" {
-  count           = local.gatewayEnabled ? length(local.domains) : 0
-  domain_name     = aws_api_gateway_domain_name.domain[count.index].domain_name
+  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+
+  domain_name     = aws_api_gateway_domain_name.domain[each.value.name].domain_name
   api_id          = aws_api_gateway_rest_api.gateway[0].id
   stage_name      = aws_api_gateway_stage.gateway[0].stage_name
 }
 
 resource "aws_route53_record" "domain_record" {
-  count           = local.gatewayEnabled ? length(local.domains) : 0
+  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+
   type            = "A"
-  name            = aws_api_gateway_domain_name.domain[count.index].domain_name
-  zone_id         = data.aws_route53_zone.zone[count.index].id
+  name            = aws_api_gateway_domain_name.domain[each.value.name].domain_name
+  zone_id         = data.aws_route53_zone.zone[each.value.name].id
 
   alias {
     evaluate_target_health = true
-    name          = aws_api_gateway_domain_name.domain[count.index].cloudfront_domain_name
-    zone_id       = aws_api_gateway_domain_name.domain[count.index].cloudfront_zone_id
+    name          = aws_api_gateway_domain_name.domain[each.value.name].cloudfront_domain_name
+    zone_id       = aws_api_gateway_domain_name.domain[each.value.name].cloudfront_zone_id
   }
 }

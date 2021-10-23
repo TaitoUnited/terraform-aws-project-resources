@@ -18,42 +18,46 @@
 
 resource "aws_iam_policy" "topic_publisher" {
   depends_on = [ aws_sns_topic.topic ]
-  count  = length(local.topicsById)
-  name   = "${values(local.topicsById)[count.index].name}-topic-publisher"
-  policy = data.aws_iam_policy_document.topic_publisher[count.index].json
+  for_each = {for item in local.topicsById: item.name => item}
+
+  name   = "${each.value.name}-topic-publisher"
+  policy = data.aws_iam_policy_document.topic_publisher[each.value.name].json
 }
 
 data "aws_iam_policy_document" "topic_publisher" {
   depends_on = [ aws_sns_topic.topic ]
-  count  = length(local.topicsById)
+  for_each = {for item in local.topicsById: item.name => item}
+
   statement {
     actions = [
       "sns:Publish"
     ]
 
     resources = [
-      "arn:aws:sns:::${values(local.topicsById)[count.index].name}",
+      "arn:aws:sns:::${each.value.name}",
     ]
   }
 }
 
 resource "aws_iam_policy" "topic_subscriber" {
   depends_on = [ aws_sns_topic.topic ]
-  count  = length(local.topicsById)
-  name   = "${values(local.topicsById)[count.index].name}-topic-subscriber"
-  policy = data.aws_iam_policy_document.topic_subscriber[count.index].json
+  for_each = {for item in local.topicsById: item.name => item}
+
+  name   = "${each.value.name}-topic-subscriber"
+  policy = data.aws_iam_policy_document.topic_subscriber[each.value.name].json
 }
 
 data "aws_iam_policy_document" "topic_subscriber" {
   depends_on = [ aws_sns_topic.topic ]
-  count  = length(local.topicsById)
+  for_each = {for item in local.topicsById: item.name => item}
+
   statement {
     actions = [
       "sns:Subscribe"
     ]
 
     resources = [
-      "arn:aws:sns:::${values(local.topicsById)[count.index].name}",
+      "arn:aws:sns:::${each.value.name}",
     ]
   }
 }
@@ -62,57 +66,63 @@ data "aws_iam_policy_document" "topic_subscriber" {
 
 resource "aws_iam_policy" "bucket_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
-  name   = "${values(local.bucketsById)[count.index].name}-bucket-admin"
-  policy = data.aws_iam_policy_document.bucket_admin[count.index].json
+  for_each = {for item in local.bucketsById: item.name => item}
+
+  name   = "${each.value.name}-bucket-admin"
+  policy = data.aws_iam_policy_document.bucket_admin[each.value.name].json
 }
 
 data "aws_iam_policy_document" "bucket_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
+  for_each = {for item in local.bucketsById: item.name => item}
+
   statement {
     actions = [
       "s3:*"
     ]
 
     resources = [
-      "arn:aws:s3:::${values(local.bucketsById)[count.index].name}",
-      "arn:aws:s3:::${values(local.bucketsById)[count.index].name}/*"
+      "arn:aws:s3:::${each.value.name}",
+      "arn:aws:s3:::${each.value.name}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "bucket_object_viewer" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
-  name   = "${values(local.bucketsById)[count.index].name}-bucket-viewer"
-  policy = data.aws_iam_policy_document.bucket_object_viewer[count.index].json
+  for_each = {for item in local.bucketsById: item.name => item}
+
+  name   = "${each.value.name}-bucket-viewer"
+  policy = data.aws_iam_policy_document.bucket_object_viewer[each.value.name].json
 }
 
 data "aws_iam_policy_document" "bucket_object_viewer" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
+  for_each = {for item in local.bucketsById: item.name => item}
+
   statement {
     actions = [
       "s3:GetObject"
     ]
 
     resources = [
-      "arn:aws:s3:::${values(local.bucketsById)[count.index].name}/*"
+      "arn:aws:s3:::${each.value.name}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "bucket_object_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
-  name   = "${values(local.bucketsById)[count.index].name}-bucket-editor"
-  policy = data.aws_iam_policy_document.bucket_object_admin[count.index].json
+  for_each = {for item in local.bucketsById: item.name => item}
+
+  name   = "${each.value.name}-bucket-editor"
+  policy = data.aws_iam_policy_document.bucket_object_admin[each.value.name].json
 }
 
 data "aws_iam_policy_document" "bucket_object_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  count  = length(local.bucketsById)
+  for_each = {for item in local.bucketsById: item.name => item}
+
   statement {
     actions = [
       "s3:GetObject",
@@ -121,7 +131,7 @@ data "aws_iam_policy_document" "bucket_object_admin" {
     ]
 
     resources = [
-      "arn:aws:s3:::${values(local.bucketsById)[count.index].name}/*"
+      "arn:aws:s3:::${each.value.name}/*"
     ]
   }
 }

@@ -1,7 +1,5 @@
 # AWS project resources
 
-TODO: replace count with for_each!
-
 Provides AWS resources typically required by projects. The resources are defined in a cloud provider agnostic and developer friendly YAML format. An example:
 
 ```

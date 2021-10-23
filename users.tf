@@ -15,6 +15,7 @@
  */
 
 resource "aws_iam_user" "service_account" {
-  count = length(local.serviceAccounts)
-  name  = local.serviceAccounts[count.index].id
+  for_each = {for item in local.serviceAccounts: item.id => item}
+
+  name  = each.value.id
 }

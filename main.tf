@@ -105,14 +105,14 @@ locals {
   topicPublishers = flatten([
     for service in local.topicsById: [
       for user in coalesce(service.publishers, []):
-      { topicId: service.id, userId: user.id }
+      { key: "${service.id}-${user.id}", topicId: service.id, userId: user.id }
     ]
   ])
 
   topicSubscribers = flatten([
     for service in local.topicsById: [
       for user in coalesce(service.subscribers, []):
-      { topicId: service.id, userId: user.id }
+      { key: "${service.id}-${user.id}", topicId: service.id, userId: user.id }
     ]
   ])
 
@@ -125,21 +125,21 @@ locals {
   bucketAdmins = flatten([
     for service in local.bucketsById: [
       for user in coalesce(service.admins, []):
-      { bucketId: service.id, userId: user.id }
+      { key: "${service.id}-${user.id}", bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectAdmins = flatten([
     for service in local.bucketsById: [
       for user in coalesce(service.objectAdmins, []):
-      { bucketId: service.id, userId: user.id }
+      { key: "${service.id}-${user.id}", bucketId: service.id, userId: user.id }
     ]
   ])
 
   bucketObjectViewers = flatten([
     for service in local.bucketsById: [
       for user in coalesce(service.objectViewers, []):
-      { bucketId: service.id, userId: user.id }
+      { key: "${service.id}-${user.id}", bucketId: service.id, userId: user.id }
     ]
   ])
 

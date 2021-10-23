@@ -15,34 +15,35 @@
  */
 
 data "aws_ssm_parameter" "redis_secret" {
-  count  = length(local.redisDatabasesById)
-  name   = "${local.secret_name_path}/${values(local.redisDatabasesById)[count.index].secret}"
+  for_each = {for item in local.redisDatabasesById: item.name => item}
+
+  name   = "${local.secret_name_path}/${each.value.secret}"
 }
 
 resource "aws_elasticache_subnet_group" "redis" {
-  count                         = length(local.redisDatabasesById)
+  for_each = {for item in local.redisDatabasesById: item.name => item}
 
-  name                          = values(local.redisDatabasesById)[count.index].name
+  name                          = each.value.name
   subnet_ids                    = var.elasticache_subnet_ids
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  count                         = length(local.redisDatabasesById)
+  for_each                      = {for item in local.redisDatabasesById: item.name => item}
 
-  automatic_failover_enabled    = coalesce(values(local.redisDatabasesById)[count.index].replicas, 1) > 1
-  availability_zones            = coalesce(values(local.redisDatabasesById)[count.index].zones, null)
-  replication_group_id          = values(local.redisDatabasesById)[count.index].name
-  replication_group_description = values(local.redisDatabasesById)[count.index].name
-  node_type                     = coalesce(values(local.redisDatabasesById)[count.index].machineType, "cache.t2.small")
-  number_cache_clusters         = coalesce(values(local.redisDatabasesById)[count.index].replicas, 1)
+  automatic_failover_enabled    = coalesce(each.value.replicas, 1) > 1
+  availability_zones            = coalesce(each.value.zones, null)
+  replication_group_id          = each.value.name
+  replication_group_description = each.value.name
+  node_type                     = coalesce(each.value.machineType, "cache.t2.small")
+  number_cache_clusters         = coalesce(each.value.replicas, 1)
   parameter_group_name          = "default.redis5.0"
   port                          = 6379
 
-  subnet_group_name             = aws_elasticache_subnet_group.redis[count.index].name
+  subnet_group_name             = aws_elasticache_subnet_group.redis[each.value.name].name
   security_group_ids            = var.elasticache_security_group_ids
 
   transit_encryption_enabled    = true
-  auth_token                    = data.aws_ssm_parameter.redis_secret[count.index].value
+  auth_token                    = data.aws_ssm_parameter.redis_secret[each.value.name].value
 
   lifecycle {
     ignore_changes = [ number_cache_clusters ]
@@ -50,8 +51,8 @@ resource "aws_elasticache_replication_group" "redis" {
 }
 
 resource "aws_elasticache_cluster" "redis" {
-  count                = length(local.redisDatabasesById)
+  for_each             = {for item in local.redisDatabasesById: item.name => item}
 
-  cluster_id           = values(local.redisDatabasesById)[count.index].name
-  replication_group_id = aws_elasticache_replication_group.redis[count.index].id
+  cluster_id           = each.value.name
+  replication_group_id = aws_elasticache_replication_group.redis[each.value.name].id
 }

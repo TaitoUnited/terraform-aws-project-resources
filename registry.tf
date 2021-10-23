@@ -15,11 +15,13 @@
  */
 
 resource "aws_ecr_repository" "image" {
-  count = length(local.containerRegistryTargets)
-  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}"
+  for_each = {for item in local.containerRegistryTargets: item => item}
+
+  name  = "${var.container_image_repository_path}/${each.value}"
 }
 
 resource "aws_ecr_repository" "builder" {
-  count = length(local.containerRegistryTargets)
-  name  = "${var.container_image_repository_path}/${local.containerRegistryTargets[count.index]}-builder"
+  for_each = {for item in local.containerRegistryTargets: item => item}
+
+  name  = "${var.container_image_repository_path}/${each.value}-builder"
 }

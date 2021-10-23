@@ -18,91 +18,92 @@
 
 resource "aws_iam_role_policy_attachment" "cicd_policies" {
   depends_on = [ aws_iam_role.cicd ]
-  count      = var.create_service_accounts ? length(var.cicd_policies) : 0
+  for_each   = {for item in (var.create_service_accounts ? var.cicd_policies : []): item => item}
+
   role       = aws_iam_role.cicd[0].name
-  policy_arn = var.cicd_policies[count.index]
+  policy_arn = each.value
 }
 
 # Gateway role
 
 resource "aws_iam_role_policy_attachment" "gateway_policies" {
   depends_on = [ aws_iam_role.gateway ]
-  count      = var.create_service_accounts ? length(var.gateway_policies) : 0
+  for_each   = {for item in (var.create_service_accounts ? var.gateway_policies : []): item => item}
+
   role       = aws_iam_role.gateway[0].name
-  policy_arn = var.gateway_policies[count.index]
+  policy_arn = each.value
 }
 
 # Topics
 
 resource "aws_iam_user_policy_attachment" "topic_publish_permission" {
   depends_on = [ aws_iam_user.service_account ]
-  count      = length(local.topicPublishers)
-  user       = local.topicPublishers[count.index].userId
-  policy_arn = aws_iam_policy.topic_publisher[
-    index(keys(local.topicsById), local.topicPublishers[count.index].topicId)
-  ].arn
+  for_each   = {for item in local.topicPublishers: item.key => item}
+
+  user       = each.value.userId
+  policy_arn = aws_iam_policy.topic_publisher[each.value.topicId].arn
 }
 
 resource "aws_iam_user_policy_attachment" "topic_subscribe_permission" {
   depends_on = [ aws_iam_user.service_account ]
-  count      = length(local.topicSubscribers)
-  user       = local.topicSubscribers[count.index].userId
-  policy_arn = aws_iam_policy.topic_subscriber[
-    index(keys(local.topicsById), local.topicSubscribers[count.index].topicId)
-  ].arn
+  for_each   = {for item in local.topicSubscribers: item.key => item}
+
+  user       = each.value.userId
+  policy_arn = aws_iam_policy.topic_subscriber[each.value.topicId].arn
 }
 
 # Buckets
 
 resource "aws_iam_user_policy_attachment" "bucket_admin_permission" {
   depends_on = [ aws_iam_user.service_account ]
-  count      = length(local.bucketAdmins)
-  user       = local.bucketAdmins[count.index].userId
-  policy_arn = aws_iam_policy.bucket_admin[
-    index(keys(local.bucketsById), local.bucketAdmins[count.index].bucketId)
-  ].arn
+  for_each   = {for item in local.bucketAdmins: item.key => item}
+
+  user       = each.value.userId
+  policy_arn = aws_iam_policy.bucket_admin[each.value.bucketId].arn
 }
 
 resource "aws_iam_user_policy_attachment" "bucket_object_admin_permission" {
   depends_on = [ aws_iam_user.service_account ]
-  count      = length(local.bucketObjectAdmins)
-  user       = local.bucketObjectAdmins[count.index].userId
-  policy_arn = aws_iam_policy.bucket_admin[
-    index(keys(local.bucketsById), local.bucketObjectAdmins[count.index].bucketId)
-  ].arn
+  for_each   = {for item in local.bucketObjectAdmins: item.key => item}
+
+  user       = each.value.userId
+  policy_arn = aws_iam_policy.bucket_admin[each.value.bucketId].arn
 }
 
 resource "aws_iam_user_policy_attachment" "bucket_object_viewer_permission" {
   depends_on = [ aws_iam_user.service_account ]
-  count      = length(local.bucketObjectViewers)
-  user       = local.bucketObjectViewers[count.index].userId
-  policy_arn = aws_iam_policy.bucket_admin[
-    index(keys(local.bucketsById), local.bucketObjectViewers[count.index].bucketId)
-  ].arn
+  for_each   = {for item in local.bucketObjectViewers: item.key => item}
+
+  user       = each.value.userId
+  policy_arn = aws_iam_policy.bucket_admin[each.value.bucketId].arn
 }
 
 # Functions
 
 resource "aws_iam_role_policy" "function_aws_policy" {
-  count = length(local.functionsWithPolicyById)
-  role = aws_iam_role.function[count.index].name
-  policy = jsonencode(values(local.functionsForPermissionsById)[count.index].awsPolicy)
+  for_each = {for item in local.functionsWithPolicyById: item.name => item}
+
+  role = each.value.name
+  policy = jsonencode(values(local.functionsForPermissionsById)[each.value.name].awsPolicy)
 }
 
 resource "aws_iam_role_policy_attachment" "function_vpcaccessor" {
-  count = length(local.functionsForPermissionsById)
-  role = aws_iam_role.function[count.index].name
+  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+
+  role = each.value.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "secretreader" {
-  count = length(local.functionsForPermissionsById)
-  role = aws_iam_role.function[count.index].name
-  policy = data.aws_iam_policy_document.secretreader[count.index].json
+  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+
+  role = each.value.name
+  policy = data.aws_iam_policy_document.secretreader[each.value.name].json
 }
 
 data "aws_iam_policy_document" "secretreader" {
-  count = length(local.functionsForPermissionsById)
+  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+
   statement {
     actions = [
       "ssm:GetParameter",
@@ -111,7 +112,7 @@ data "aws_iam_policy_document" "secretreader" {
     ]
 
     resources = [
-      for envvar, secret in values(local.functionsForPermissionsById)[count.index].secrets:
+      for envvar, secret in each.value.secrets:
       "${local.secret_resource_path}/${secret}"
     ]
   }
@@ -120,11 +121,11 @@ data "aws_iam_policy_document" "secretreader" {
 # API Gateway
 
 resource "aws_lambda_permission" "apigw" {
-  count = local.gatewayEnabled ? length(local.gatewayFunctionsById) : 0
+  for_each = {for item in (local.gatewayEnabled ? local.gatewayFunctionsById : []): item.name => item}
 
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.function[count.index].function_name
+  function_name = "${var.project}-${each.value.name}-${var.env}"
   principal     = "apigateway.amazonaws.com"
 
   # The "/*/*" portion grants access from any method on any resource

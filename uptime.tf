@@ -15,12 +15,12 @@
  */
 
 resource "aws_route53_health_check" "uptimez" {
-  count = length(local.uptimeTargetsById)
+  for_each = {for item in local.uptimeTargetsById: item.name => item}
 
   fqdn              = try(local.ingress.domains[0].name, null)
   port              = 443
   type              = "HTTPS"
-  resource_path     = values(local.uptimeTargetsById)[count.index].uptimePath
+  resource_path     = each.value.uptimePath
   failure_threshold = "3"
   request_interval  = "10"
   measure_latency   = true
@@ -34,8 +34,8 @@ resource "aws_route53_health_check" "uptimez" {
   tags = {
     Name = "${var.project}-${var.env}"
     Domain = try(local.ingress.domains[0].name, null)
-    Target = values(local.uptimeTargetsById)[count.index].id
-    Path = values(local.uptimeTargetsById)[count.index].uptimePath
+    Target = each.value.name
+    Path = each.value.uptimePath
   }
 }
 

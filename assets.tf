@@ -26,7 +26,7 @@ resource "aws_api_gateway_method" "static_root_path" {
 }
 
 resource "aws_api_gateway_integration" "static_root_path" {
-  count = length(keys(local.gatewayRootStaticContentsById))
+  for_each = {for item in local.gatewayRootStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   resource_id = aws_api_gateway_method.static_root_path[0].resource_id
@@ -36,25 +36,25 @@ resource "aws_api_gateway_integration" "static_root_path" {
   type                    = "AWS"
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
-  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayRootStaticContentsById)[count.index]}/index.html"
+  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${each.value.name}/index.html"
   credentials             = data.aws_iam_role.gateway.arn
 }
 
 /* Parent path routing: /PATH/ */
 
 resource "aws_api_gateway_resource" "static_parent_path" {
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   parent_id   = aws_api_gateway_rest_api.gateway[0].root_resource_id
-  path_part   = replace(values(local.gatewayStaticContentsById)[count.index].path, "/", "")
+  path_part   = replace(each.value.path, "/", "")
 }
 
 resource "aws_api_gateway_method" "static_parent_path" {
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
-  resource_id   = aws_api_gateway_resource.static_parent_path[count.index].id
+  resource_id   = aws_api_gateway_resource.static_parent_path[each.value.name].id
   http_method   = "GET"
   authorization = "NONE"
 
@@ -64,41 +64,39 @@ resource "aws_api_gateway_method" "static_parent_path" {
 }
 
 resource "aws_api_gateway_integration" "static_parent_path" {
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_method.static_parent_path[count.index].resource_id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
+  resource_id = aws_api_gateway_method.static_parent_path[each.value.name].resource_id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
 
   integration_http_method = "GET"
   type                    = "AWS"
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
-  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayChildStaticContentsById)[count.index]}/index.html"
+  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${each.value.name}/index.html"
   credentials             = data.aws_iam_role.gateway.arn
 }
 
 /* Path routing: /PATH/{proxy+} */
 
 resource "aws_api_gateway_resource" "static_path" {
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   parent_id   = (
-    replace(values(local.gatewayStaticContentsById)[count.index].path, "/", "") != ""
-      ? aws_api_gateway_resource.static_parent_path[
-          index(keys(local.gatewayChildStaticContentsById), keys(local.gatewayStaticContentsById)[count.index])
-        ].id
+    replace(each.value.path, "/", "") != ""
+      ? aws_api_gateway_resource.static_parent_path[each.value.name].id
       : aws_api_gateway_rest_api.gateway[0].root_resource_id
   )
   path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "static_path" {
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
-  resource_id   = aws_api_gateway_resource.static_path[count.index].id
+  resource_id   = aws_api_gateway_resource.static_path[each.value.name].id
   http_method   = "GET"
   authorization = "NONE"
 
@@ -108,11 +106,11 @@ resource "aws_api_gateway_method" "static_path" {
 }
 
 resource "aws_api_gateway_integration" "static_path" {
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_method.static_path[count.index].resource_id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
+  resource_id = aws_api_gateway_method.static_path[each.value.name].resource_id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
 
   integration_http_method = "GET"
   type                    = "AWS"
@@ -123,7 +121,7 @@ resource "aws_api_gateway_integration" "static_path" {
   }
 
   # See uri description: https://docs.aws.amazon.com/apigateway/api-reference/resource/integration/
-  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${keys(local.gatewayStaticContentsById)[count.index]}/index.html"
+  uri                     = "arn:aws:apigateway:${var.region}:s3:path/${var.static_assets_bucket}/${var.static_assets_path}/${var.build_image_tag}/${each.value.name}/index.html"
   credentials             = data.aws_iam_role.gateway.arn
 }
 
@@ -211,11 +209,11 @@ resource "aws_api_gateway_integration_response" "static_root_static_path_integra
 /* Responses: /PATH/ */
 
 resource "aws_api_gateway_method_response" "static_parent_path_status_200" {
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
   status_code = "200"
 
   response_parameters = {
@@ -231,32 +229,32 @@ resource "aws_api_gateway_method_response" "static_parent_path_status_200" {
 
 resource "aws_api_gateway_method_response" "static_parent_path_status_400" {
   depends_on = [ aws_api_gateway_integration.static_parent_path ]
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
   status_code = "400"
 }
 
 resource "aws_api_gateway_method_response" "static_parent_path_status_500" {
   depends_on = [ aws_api_gateway_integration.static_parent_path ]
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
   status_code = "500"
 }
 
 resource "aws_api_gateway_integration_response" "static_parent_path_integration_200" {
   depends_on = [ aws_api_gateway_integration.static_parent_path ]
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_200[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_200[each.value.name].status_code
 
   response_parameters = {
     "method.response.header.Timestamp"      = "integration.response.header.Date"
@@ -267,24 +265,24 @@ resource "aws_api_gateway_integration_response" "static_parent_path_integration_
 
 resource "aws_api_gateway_integration_response" "static_parent_path_integration_400" {
   depends_on = [ aws_api_gateway_integration.static_parent_path ]
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_400[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_400[each.value.name].status_code
 
   selection_pattern = "4\\d{2}"
 }
 
 resource "aws_api_gateway_integration_response" "static_parent_path_integration_500" {
   depends_on = [ aws_api_gateway_integration.static_parent_path ]
-  count = length(local.gatewayChildStaticContentsById)
+  for_each = {for item in local.gatewayChildStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_parent_path[count.index].id
-  http_method = aws_api_gateway_method.static_parent_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_500[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_parent_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_parent_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_500[each.value.name].status_code
 
   selection_pattern = "5\\d{2}"
 }
@@ -292,11 +290,11 @@ resource "aws_api_gateway_integration_response" "static_parent_path_integration_
 /* Responses: /PATH/{proxy+} */
 
 resource "aws_api_gateway_method_response" "static_path_status_200" {
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
   status_code = "200"
 
   response_parameters = {
@@ -312,32 +310,32 @@ resource "aws_api_gateway_method_response" "static_path_status_200" {
 
 resource "aws_api_gateway_method_response" "static_path_status_400" {
   depends_on = [ aws_api_gateway_integration.static_path ]
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
   status_code = "400"
 }
 
 resource "aws_api_gateway_method_response" "static_path_status_500" {
   depends_on = [ aws_api_gateway_integration.static_path ]
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
   status_code = "500"
 }
 
 resource "aws_api_gateway_integration_response" "static_path_integration_200" {
   depends_on = [ aws_api_gateway_integration.static_path ]
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_200[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_200[each.value.name].status_code
 
   response_parameters = {
     "method.response.header.Timestamp"      = "integration.response.header.Date"
@@ -348,24 +346,24 @@ resource "aws_api_gateway_integration_response" "static_path_integration_200" {
 
 resource "aws_api_gateway_integration_response" "static_path_integration_400" {
   depends_on = [ aws_api_gateway_integration.static_path ]
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_400[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_400[each.value.name].status_code
 
   selection_pattern = "4\\d{2}"
 }
 
 resource "aws_api_gateway_integration_response" "static_path_integration_500" {
   depends_on = [ aws_api_gateway_integration.static_path ]
-  count = length(local.gatewayStaticContentsById)
+  for_each = {for item in local.gatewayStaticContentsById: item.name => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_resource.static_path[count.index].id
-  http_method = aws_api_gateway_method.static_path[count.index].http_method
-  status_code = aws_api_gateway_method_response.static_path_status_500[count.index].status_code
+  resource_id = aws_api_gateway_resource.static_path[each.value.name].id
+  http_method = aws_api_gateway_method.static_path[each.value.name].http_method
+  status_code = aws_api_gateway_method_response.static_path_status_500[each.value.name].status_code
 
   selection_pattern = "5\\d{2}"
 }

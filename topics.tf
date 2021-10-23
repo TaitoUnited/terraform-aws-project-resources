@@ -15,6 +15,7 @@
  */
 
 resource "aws_sns_topic" "topic" {
-  count = length(local.topicsById)
-  name  = values(local.topicsById)[count.index].name
+  for_each = {for item in local.topicsById: item.name => item}
+
+  name  = each.value.name
 }

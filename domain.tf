@@ -15,8 +15,9 @@
  */
 
 resource "aws_route53_zone" "zone" {
-  count           = var.create_domain && local.ingress.enabled && local.ingress.createMainDomain ? length(local.mainDomains) : 0
-  name            = local.mainDomains[count.index]
+  for_each = {for item in (var.create_domain && local.ingress.enabled && local.ingress.createMainDomain ? local.mainDomains : []): item => item}
+
+  name            = each.value
 
   tags = {
     Environment   = var.env
@@ -25,27 +26,31 @@ resource "aws_route53_zone" "zone" {
 
 data "aws_route53_zone" "zone" {
   depends_on      = [ aws_route53_zone.zone ]
-  count           = length(local.mainDomains)
-  name            = local.mainDomains[count.index]
+  for_each        = {for item in local.mainDomains: item => item}
+
+  name            = each.value
 }
 
 resource "aws_acm_certificate" "domain_cert" {
-  count             = var.create_domain_certificate && local.ingress.enabled ? length(local.domains) : 0
-  domain_name       = local.domains[count.index].name
+  for_each = {for item in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): item.name => item}
+
+  domain_name       = each.value.name
   validation_method = "DNS"
 }
 
 resource "aws_route53_record" "domain_cert_validation_record" {
-  count   = var.create_domain_certificate && local.ingress.enabled ? length(local.domains) : 0
-  name    = aws_acm_certificate.domain_cert[count.index].domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.domain_cert[count.index].domain_validation_options.0.resource_record_type
-  zone_id = data.aws_route53_zone.zone[count.index].id
-  records = [aws_acm_certificate.domain_cert[count.index].domain_validation_options.0.resource_record_value]
+  for_each = {for item in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): item.name => item}
+
+  name    = aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_name
+  type    = aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_type
+  zone_id = data.aws_route53_zone.zone[each.value.name].id
+  records = [aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_value]
   ttl     = 60
 }
 
 resource "aws_acm_certificate_validation" "domain_cert_validation" {
-  count                   = var.create_domain_certificate && local.ingress.enabled ? length(local.domains) : 0
-  certificate_arn         = aws_acm_certificate.domain_cert[count.index].arn
-  validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[count.index].fqdn ]
+  for_each = {for item in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): item.name => item}
+
+  certificate_arn         = aws_acm_certificate.domain_cert[each.value.name].arn
+  validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[each.value.name].fqdn ]
 }
