@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "secretreader" {
 # API Gateway
 
 resource "aws_lambda_permission" "apigw" {
-  for_each = {for item in (local.gatewayEnabled ? local.gatewayFunctionsById : []): item.name => item}
+  for_each = {for item in (local.gatewayEnabled ? values(local.gatewayFunctionsById) : []): item.name => item}
 
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"

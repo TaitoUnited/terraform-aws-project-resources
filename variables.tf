@@ -337,6 +337,7 @@ variable "resources" {
         allowedOrigins = list(string)
         allowedMethods = optional(list(string))
         exposeHeaders = optional(list(string))
+        allowedHeaders = optional(list(string))
         maxAgeSeconds = optional(number)
       })))
       queues = optional(list(object({
@@ -376,6 +377,14 @@ variable "resources" {
       subscribers = optional(list(object({
         id = string
       })))
+      awsPolicy = optional(object({
+        Version = string
+        Statement = list(object({
+          Effect = string
+          Action = list(string)
+          Resource = string
+        }))
+      }))
     })))
   })
   description = "Resources as JSON (see README.md). You can read values from a YAML file with yamldecode()."

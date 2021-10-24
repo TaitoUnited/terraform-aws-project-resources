@@ -26,7 +26,7 @@ resource "aws_route53_zone" "zone" {
 
 data "aws_route53_zone" "zone" {
   depends_on      = [ aws_route53_zone.zone ]
-  for_each        = {for item in local.mainDomains: item => item}
+  for_each        = {for item in (local.ingress.enabled ? local.mainDomains : []): item => item}
 
   name            = each.value
 }

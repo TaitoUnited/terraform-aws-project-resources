@@ -148,7 +148,7 @@ locals {
       ? distinct(concat(var.additional_container_images, keys({
           for name, service in local.servicesById:
           name => service
-          if contains(var.container_image_target_types, service.type)
+          if contains(var.container_image_target_types, service.type != null ? service.type : "no-match")
         })))
       : []
   )
