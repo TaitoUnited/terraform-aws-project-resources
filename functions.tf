@@ -58,7 +58,7 @@ resource "aws_lambda_function" "function" {
       each.value.env,
       {
         for key, value in each.value.secrets:
-        "${key}_PARAM" => "${local.secret_name_path}/${value}"
+        "${key}_SECRETID" => "${local.secret_name_path}/${value}"
       }
     )
   }
