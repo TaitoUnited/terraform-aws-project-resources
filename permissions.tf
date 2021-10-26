@@ -107,8 +107,7 @@ data "aws_iam_policy_document" "secretreader" {
   statement {
     actions = [
       "ssm:GetParameter",
-      /* "ssm:GetParameters", */
-      /* "ssm:GetParametersByPath", */
+      "secretsmanager:GetSecretValue",
     ]
 
     resources = [

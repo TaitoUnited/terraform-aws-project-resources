@@ -27,7 +27,7 @@ provider "aws" {
 
 locals {
 
-  secret_resource_path = var.secret_resource_path != "" ? var.secret_resource_path : "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.zone_name}/${var.namespace}"
+  secret_resource_path = var.secret_resource_path != "" ? var.secret_resource_path : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:/${var.zone_name}/${var.namespace}"
 
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"
 
