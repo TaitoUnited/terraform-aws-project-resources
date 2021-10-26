@@ -76,4 +76,6 @@ resource "aws_acm_certificate_validation" "domain_cert_validation" {
 
   certificate_arn         = aws_acm_certificate.domain_cert[each.value.domain.name].arn
   validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[each.value.dvo_domain_name].fqdn ]
+
+  provider          = "aws.useast1"
 }
