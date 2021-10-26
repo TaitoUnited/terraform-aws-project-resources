@@ -15,9 +15,9 @@
  */
 
 resource "aws_route53_zone" "zone" {
-  for_each = {for item in (var.create_domain && local.ingress.enabled && local.ingress.createMainDomain ? local.mainDomains : []): item => item}
+  for_each = {for item in (var.create_domain && local.ingress.enabled && local.ingress.createMainDomain ? local.domains : []): item.name => item}
 
-  name            = each.value
+  name            = each.value.mainDomain
 
   tags = {
     Environment   = var.env
@@ -26,9 +26,9 @@ resource "aws_route53_zone" "zone" {
 
 data "aws_route53_zone" "zone" {
   depends_on      = [ aws_route53_zone.zone ]
-  for_each        = {for item in (local.ingress.enabled ? local.mainDomains : []): item => item}
+  for_each        = {for item in (local.ingress.enabled ? local.domains : []): item.name => item}
 
-  name            = each.value
+  name            = each.value.mainDomain
 }
 
 resource "aws_acm_certificate" "domain_cert" {
@@ -39,18 +39,40 @@ resource "aws_acm_certificate" "domain_cert" {
 }
 
 resource "aws_route53_record" "domain_cert_validation_record" {
-  for_each = {for item in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): item.name => item}
+  for_each = {
+    for item in flatten([
+      for domain in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): [
+        for dvo in aws_acm_certificate.domain_cert[domain.name].domain_validation_options : {
+          dvo_domain_name = dvo.domain_name
+          name            = dvo.resource_record_name
+          record          = dvo.resource_record_value
+          type            = dvo.resource_record_type
+          domain          = domain
+        }
+      ]
+    ]): item.dvo_domain_name => item
+  }
 
-  name    = aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_name
-  type    = aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_type
-  zone_id = data.aws_route53_zone.zone[each.value.name].id
-  records = [aws_acm_certificate.domain_cert[each.value.name].domain_validation_options.0.resource_record_value]
-  ttl     = 60
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.zone[each.value.domain.name].id
 }
 
 resource "aws_acm_certificate_validation" "domain_cert_validation" {
-  for_each = {for item in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): item.name => item}
+  for_each = {
+    for item in flatten([
+      for domain in (var.create_domain_certificate && local.ingress.enabled ? local.domains: []): [
+        for dvo in aws_acm_certificate.domain_cert[domain.name].domain_validation_options : {
+          dvo_domain_name = dvo.domain_name
+          domain          = domain
+        }
+      ]
+    ]): item.dvo_domain_name => item
+  }
 
-  certificate_arn         = aws_acm_certificate.domain_cert[each.value.name].arn
-  validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[each.value.name].fqdn ]
+  certificate_arn         = aws_acm_certificate.domain_cert[each.value.domain.name].arn
+  validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[each.value.dvo_domain_name].fqdn ]
 }

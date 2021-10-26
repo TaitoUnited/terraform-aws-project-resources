@@ -33,17 +33,17 @@ locals {
 
   ingress = defaults(var.resources.ingress, { enabled: false })
 
-  domains = coalesce(var.resources.ingress.domains, [])
-
-  mainDomains = [
-    for domain in local.domains:
-    join(".",
-      slice(
-        split(".", domain.name),
-        length(split(".", domain.name)) > 2 ? 1 : 0,
-        length(split(".", domain.name))
+  domains = [
+    for domain in coalesce(var.resources.ingress.domains, []):
+    merge(domain, {
+      mainDomain = join(".",
+        slice(
+          split(".", domain.name),
+          length(split(".", domain.name)) > 2 ? 1 : 0,
+          length(split(".", domain.name))
+        )
       )
-    )
+    })
   ]
 
   services = coalesce(var.resources.services, {})
