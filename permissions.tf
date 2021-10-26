@@ -106,13 +106,12 @@ data "aws_iam_policy_document" "secretreader" {
 
   statement {
     actions = [
-      "ssm:GetParameter",
       "secretsmanager:GetSecretValue",
     ]
 
     resources = [
       for envvar, secret in each.value.secrets:
-      "${local.secret_resource_path}/${secret}"
+      "${local.secret_resource_path}/${secret}-*"
     ]
   }
 }
