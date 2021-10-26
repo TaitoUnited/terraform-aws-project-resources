@@ -36,6 +36,7 @@ resource "aws_acm_certificate" "domain_cert" {
 
   domain_name       = each.value.name
   validation_method = "DNS"
+  provider          = "aws.useast1"
 }
 
 resource "aws_route53_record" "domain_cert_validation_record" {

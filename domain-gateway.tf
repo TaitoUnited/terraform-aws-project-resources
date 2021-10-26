@@ -18,6 +18,7 @@ data "aws_acm_certificate" "domain_cert" {
   for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
 
   domain          = each.value.name
+  provider        = "aws.useast1"
 }
 
 resource "aws_api_gateway_domain_name" "domain" {

@@ -19,6 +19,12 @@ provider "aws" {
   profile = var.user_profile
 }
 
+provider "aws" {
+  alias   = "useast1"
+  region  = "us-east-1"
+  profile = var.user_profile
+}
+
 locals {
 
   secret_resource_path = var.secret_resource_path != "" ? var.secret_resource_path : "arn:aws:ssm:${var.region}:${var.account_id}:parameter/${var.zone_name}/${var.namespace}"
