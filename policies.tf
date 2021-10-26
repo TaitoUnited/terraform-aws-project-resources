@@ -18,15 +18,15 @@
 
 resource "aws_iam_policy" "topic_publisher" {
   depends_on = [ aws_sns_topic.topic ]
-  for_each = {for item in local.topicsById: item.name => item}
+  for_each = {for item in local.topicsById: item.id => item}
 
   name   = "${each.value.name}-topic-publisher"
-  policy = data.aws_iam_policy_document.topic_publisher[each.value.name].json
+  policy = data.aws_iam_policy_document.topic_publisher[each.key].json
 }
 
 data "aws_iam_policy_document" "topic_publisher" {
   depends_on = [ aws_sns_topic.topic ]
-  for_each = {for item in local.topicsById: item.name => item}
+  for_each = {for item in local.topicsById: item.id => item}
 
   statement {
     actions = [
@@ -41,15 +41,15 @@ data "aws_iam_policy_document" "topic_publisher" {
 
 resource "aws_iam_policy" "topic_subscriber" {
   depends_on = [ aws_sns_topic.topic ]
-  for_each = {for item in local.topicsById: item.name => item}
+  for_each = {for item in local.topicsById: item.id => item}
 
   name   = "${each.value.name}-topic-subscriber"
-  policy = data.aws_iam_policy_document.topic_subscriber[each.value.name].json
+  policy = data.aws_iam_policy_document.topic_subscriber[each.key].json
 }
 
 data "aws_iam_policy_document" "topic_subscriber" {
   depends_on = [ aws_sns_topic.topic ]
-  for_each = {for item in local.topicsById: item.name => item}
+  for_each = {for item in local.topicsById: item.id => item}
 
   statement {
     actions = [
@@ -66,15 +66,15 @@ data "aws_iam_policy_document" "topic_subscriber" {
 
 resource "aws_iam_policy" "bucket_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   name   = "${each.value.name}-bucket-admin"
-  policy = data.aws_iam_policy_document.bucket_admin[each.value.name].json
+  policy = data.aws_iam_policy_document.bucket_admin[each.key].json
 }
 
 data "aws_iam_policy_document" "bucket_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   statement {
     actions = [
@@ -90,15 +90,15 @@ data "aws_iam_policy_document" "bucket_admin" {
 
 resource "aws_iam_policy" "bucket_object_viewer" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   name   = "${each.value.name}-bucket-viewer"
-  policy = data.aws_iam_policy_document.bucket_object_viewer[each.value.name].json
+  policy = data.aws_iam_policy_document.bucket_object_viewer[each.key].json
 }
 
 data "aws_iam_policy_document" "bucket_object_viewer" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   statement {
     actions = [
@@ -113,15 +113,15 @@ data "aws_iam_policy_document" "bucket_object_viewer" {
 
 resource "aws_iam_policy" "bucket_object_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   name   = "${each.value.name}-bucket-editor"
-  policy = data.aws_iam_policy_document.bucket_object_admin[each.value.name].json
+  policy = data.aws_iam_policy_document.bucket_object_admin[each.key].json
 }
 
 data "aws_iam_policy_document" "bucket_object_admin" {
   depends_on = [ aws_s3_bucket.bucket ]
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   statement {
     actions = [

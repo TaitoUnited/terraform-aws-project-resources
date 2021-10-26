@@ -15,20 +15,20 @@
  */
 
 data "aws_ssm_parameter" "redis_secret" {
-  for_each = {for item in local.redisDatabasesById: item.name => item}
+  for_each = {for item in local.redisDatabasesById: item.id => item}
 
   name   = "${local.secret_name_path}/${each.value.secret}"
 }
 
 resource "aws_elasticache_subnet_group" "redis" {
-  for_each = {for item in local.redisDatabasesById: item.name => item}
+  for_each = {for item in local.redisDatabasesById: item.id => item}
 
   name                          = each.value.name
   subnet_ids                    = var.elasticache_subnet_ids
 }
 
 resource "aws_elasticache_replication_group" "redis" {
-  for_each                      = {for item in local.redisDatabasesById: item.name => item}
+  for_each                      = {for item in local.redisDatabasesById: item.id => item}
 
   automatic_failover_enabled    = coalesce(each.value.replicas, 1) > 1
   availability_zones            = coalesce(each.value.zones, null)
@@ -39,11 +39,11 @@ resource "aws_elasticache_replication_group" "redis" {
   parameter_group_name          = "default.redis5.0"
   port                          = 6379
 
-  subnet_group_name             = aws_elasticache_subnet_group.redis[each.value.name].name
+  subnet_group_name             = aws_elasticache_subnet_group.redis[each.key].name
   security_group_ids            = var.elasticache_security_group_ids
 
   transit_encryption_enabled    = true
-  auth_token                    = data.aws_ssm_parameter.redis_secret[each.value.name].value
+  auth_token                    = data.aws_ssm_parameter.redis_secret[each.key].value
 
   lifecycle {
     ignore_changes = [ number_cache_clusters ]
@@ -51,8 +51,8 @@ resource "aws_elasticache_replication_group" "redis" {
 }
 
 resource "aws_elasticache_cluster" "redis" {
-  for_each             = {for item in local.redisDatabasesById: item.name => item}
+  for_each             = {for item in local.redisDatabasesById: item.id => item}
 
   cluster_id           = each.value.name
-  replication_group_id = aws_elasticache_replication_group.redis[each.value.name].id
+  replication_group_id = aws_elasticache_replication_group.redis[each.key].id
 }

@@ -15,7 +15,7 @@
  */
 
 resource "aws_route53_health_check" "uptimez" {
-  for_each = {for item in local.uptimeTargetsById: item.name => item}
+  for_each = {for item in local.uptimeTargetsById: item.id => item}
 
   fqdn              = try(local.ingress.domains[0].name, null)
   port              = 443
@@ -34,7 +34,7 @@ resource "aws_route53_health_check" "uptimez" {
   tags = {
     Name = "${var.project}-${var.env}"
     Domain = try(local.ingress.domains[0].name, null)
-    Target = each.value.name
+    Target = each.value.id
     Path = each.value.uptimePath
   }
 }

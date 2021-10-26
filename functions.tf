@@ -18,13 +18,13 @@
 
 # TODO: use layers https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html
 resource "aws_lambda_function" "function" {
-  for_each = {for item in local.functionsById: item.name => item}
+  for_each = {for item in local.functionsById: item.id => item}
 
-  function_name  = "${var.project}-${each.value.name}-${var.env}"
+  function_name  = "${var.project}-${each.key}-${var.env}"
 
   # The bucket name as created earlier with "aws s3api create-bucket"
   s3_bucket = var.functions_bucket
-  s3_key    = "${var.functions_path}/${var.build_image_tag}/${each.value.name}.zip"
+  s3_key    = "${var.functions_path}/${var.build_image_tag}/${each.key}.zip"
 
   handler = "index.handler"
 
@@ -51,7 +51,7 @@ resource "aws_lambda_function" "function" {
     security_group_ids = var.function_security_group_ids
   }
 
-  role = aws_iam_role.function[each.value.name].arn
+  role = aws_iam_role.function[each.key].arn
 
   environment {
     variables = merge(
@@ -67,9 +67,9 @@ resource "aws_lambda_function" "function" {
 /* Role */
 
 resource "aws_iam_role" "function" {
-  for_each = {for item in local.functionsById: item.name => item}
+  for_each = {for item in local.functionsById: item.id => item}
 
-  name  = "${var.project}-${each.value.name}-${var.env}"
+  name  = "${var.project}-${each.key}-${var.env}"
 
   assume_role_policy = <<EOF
 {
@@ -91,7 +91,7 @@ EOF
 /* Routing */
 
 resource "aws_api_gateway_resource" "function_parent_path" {
-  for_each = {for item in local.gatewayFunctionsById: item.name => item}
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
   parent_id   = aws_api_gateway_rest_api.gateway[0].root_resource_id
@@ -99,30 +99,30 @@ resource "aws_api_gateway_resource" "function_parent_path" {
 }
 
 resource "aws_api_gateway_resource" "function_path" {
-  for_each = {for item in local.gatewayFunctionsById: item.name => item}
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  parent_id   = aws_api_gateway_resource.function_parent_path[each.value.name].id
+  parent_id   = aws_api_gateway_resource.function_parent_path[each.key].id
   path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "function_path" {
-  for_each = {for item in local.gatewayFunctionsById: item.name => item}
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
-  resource_id   = aws_api_gateway_resource.function_path[each.value.name].id
+  resource_id   = aws_api_gateway_resource.function_path[each.key].id
   http_method   = "ANY"
   authorization = "NONE"
 }
 
 resource "aws_api_gateway_integration" "function" {
-  for_each = {for item in local.gatewayFunctionsById: item.name => item}
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_method.function_path[each.value.name].resource_id
-  http_method = aws_api_gateway_method.function_path[each.value.name].http_method
+  resource_id = aws_api_gateway_method.function_path[each.key].resource_id
+  http_method = aws_api_gateway_method.function_path[each.key].http_method
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.function[each.value.name].invoke_arn
+  uri                     = aws_lambda_function.function[each.key].invoke_arn
 }

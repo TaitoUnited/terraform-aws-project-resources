@@ -15,7 +15,7 @@
  */
 
 resource "aws_s3_bucket" "bucket" {
-  for_each = {for item in local.bucketsById: item.name => item}
+  for_each = {for item in local.bucketsById: item.id => item}
 
   bucket = each.value.name
   # DEPRECATED: region = each.value.location

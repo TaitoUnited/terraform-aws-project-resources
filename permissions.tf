@@ -81,28 +81,28 @@ resource "aws_iam_user_policy_attachment" "bucket_object_viewer_permission" {
 # Functions
 
 resource "aws_iam_role_policy" "function_aws_policy" {
-  for_each = {for item in local.functionsWithPolicyById: item.name => item}
+  for_each = {for item in local.functionsWithPolicyById: item.id => item}
 
-  role = each.value.name
-  policy = jsonencode(values(local.functionsForPermissionsById)[each.value.name].awsPolicy)
+  role = aws_iam_role.function[each.key].id
+  policy = jsonencode(local.functionsForPermissionsById[each.key].awsPolicy)
 }
 
 resource "aws_iam_role_policy_attachment" "function_vpcaccessor" {
-  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+  for_each = {for item in local.functionsForPermissionsById: item.id => item}
 
-  role = each.value.name
+  role = aws_iam_role.function[each.key].id
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
 resource "aws_iam_role_policy" "secretreader" {
-  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+  for_each = {for item in local.functionsForPermissionsById: item.id => item}
 
-  role = each.value.name
-  policy = data.aws_iam_policy_document.secretreader[each.value.name].json
+  role = aws_iam_role.function[each.key].id
+  policy = data.aws_iam_policy_document.secretreader[each.key].json
 }
 
 data "aws_iam_policy_document" "secretreader" {
-  for_each = {for item in local.functionsForPermissionsById: item.name => item}
+  for_each = {for item in local.functionsForPermissionsById: item.id => item}
 
   statement {
     actions = [
@@ -121,11 +121,11 @@ data "aws_iam_policy_document" "secretreader" {
 # API Gateway
 
 resource "aws_lambda_permission" "apigw" {
-  for_each = {for item in (local.gatewayEnabled ? values(local.gatewayFunctionsById) : []): item.name => item}
+  for_each = {for item in (local.gatewayEnabled ? values(local.gatewayFunctionsById) : []): item.id => item}
 
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = "${var.project}-${each.value.name}-${var.env}"
+  function_name = "${var.project}-${each.key}-${var.env}"
   principal     = "apigateway.amazonaws.com"
 
   # The "/*/*" portion grants access from any method on any resource

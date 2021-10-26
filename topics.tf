@@ -15,7 +15,7 @@
  */
 
 resource "aws_sns_topic" "topic" {
-  for_each = {for item in local.topicsById: item.name => item}
+  for_each = {for item in local.topicsById: item.id => item}
 
   name  = each.value.name
 }
