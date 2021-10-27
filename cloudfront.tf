@@ -28,6 +28,7 @@ resource "aws_cloudfront_origin_access_identity" "OAI" {
 }
 
 resource "aws_cloudfront_distribution" "distribution" {
+  depends_on = [ aws_acm_certificate_validation.domain_cert_validation ]
   for_each = {for item in (local.cloudfrontEnabled ? local.domains : []): item.name => item}
 
   enabled             = true
@@ -59,11 +60,19 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
   */
 
-  viewer_certificate {
-    # We fetch certificate_arn through aws_acm_certificate_validation to force
-    # aws_cloudfront_distribution creation to wait for certificate validation
-    acm_certificate_arn = aws_acm_certificate_validation.domain_cert_validation[keys(aws_acm_certificate_validation.domain_cert_validation)[0]].certificate_arn
-    ssl_support_method = "sni-only"
+  dynamic "viewer_certificate" {
+    for_each = var.create_domain_certificate ? [ 1 ] : []
+    content {
+      acm_certificate_arn = var.create_domain_certificate ? aws_acm_certificate.domain_cert[each.key].arn : data.aws_acm_certificate.domain_cert[each.key].arn
+      ssl_support_method = "sni-only"
+    }
+  }
+
+  dynamic "viewer_certificate" {
+    for_each = var.create_domain_certificate ? [ ] : [ 1 ]
+    content {
+      cloudfront_default_certificate = true
+    }
   }
 
   # S3
