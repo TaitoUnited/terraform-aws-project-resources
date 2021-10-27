@@ -34,6 +34,11 @@ resource "aws_cloudfront_distribution" "distribution" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 
+  custom_error_response {
+    error_code = 404
+    response_page_path = "/index.html"
+  }
+
   aliases = concat(
     [ each.value.name ],
     [ for alt in each.value.altDomains: alt.name ]
