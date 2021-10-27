@@ -36,14 +36,14 @@ resource "aws_acm_certificate" "domain_cert" {
 
   domain_name       = each.value.name
   validation_method = "DNS"
-  provider          = "aws.useast1"
+  provider          = aws.useast1
 }
 
 data "aws_acm_certificate" "domain_cert" {
   for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
 
   domain          = each.value.name
-  provider        = "aws.useast1"
+  provider        = aws.useast1
 }
 
 resource "aws_route53_record" "domain_cert_validation_record" {
@@ -84,5 +84,5 @@ resource "aws_acm_certificate_validation" "domain_cert_validation" {
   certificate_arn         = aws_acm_certificate.domain_cert[each.value.domain.name].arn
   validation_record_fqdns = [ aws_route53_record.domain_cert_validation_record[each.value.dvo_domain_name].fqdn ]
 
-  provider          = "aws.useast1"
+  provider          = aws.useast1
 }
