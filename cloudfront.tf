@@ -60,7 +60,10 @@ resource "aws_cloudfront_distribution" "distribution" {
   */
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    # We fetch certificate_arn through aws_acm_certificate_validation to force
+    # aws_cloudfront_distribution creation to wait for certificate validation
+    acm_certificate_arn = aws_acm_certificate_validation.domain_cert_validation[keys(aws_acm_certificate_validation.domain_cert_validation)[0]].certificate_arn
+    ssl_support_method = "sni-only"
   }
 
   # S3
