@@ -168,19 +168,19 @@ locals {
   gatewayStaticContentsById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_ingress && local.ingress.enabled && service.type == "static"
+    if var.create_ingress && local.ingress.enabled && local.ingress.class == "gateway" && service.type == "static"
   }
 
   gatewayRootStaticContentsById = {
     for name, service in local.gatewayStaticContentsById:
     name => service
-    if var.create_ingress && local.ingress.enabled && service.path != null && coalesce(service.path, "") == "/"
+    if var.create_ingress && local.ingress.enabled && local.ingress.class == "gateway" && service.path != null && coalesce(service.path, "") == "/"
   }
 
   gatewayChildStaticContentsById = {
     for name, service in local.gatewayStaticContentsById:
     name => service
-    if var.create_ingress && local.ingress.enabled && service.path != null && coalesce(service.path, "") != "/"
+    if var.create_ingress && local.ingress.enabled && local.ingress.class == "gateway" && service.path != null && coalesce(service.path, "") != "/"
   }
 
   gatewayEnabled = length(concat(
