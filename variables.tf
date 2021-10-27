@@ -329,6 +329,7 @@ variable "resources" {
 
     services = optional(map(object({
       type = string
+      image = optional(string)
       machineType = optional(string)
       name = optional(string)
       location = optional(string)

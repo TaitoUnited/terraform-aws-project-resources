@@ -24,7 +24,15 @@ resource "aws_lambda_function" "function" {
 
   # The bucket name as created earlier with "aws s3api create-bucket"
   s3_bucket = var.functions_bucket
-  s3_key    = "${var.functions_path}/${var.build_image_tag}/${each.key}.zip"
+  s3_key    = (
+    each.value.image == null
+      ? "${var.functions_path}/${var.build_image_tag}/${each.key}.zip"
+      : (
+        replace(each.value.image, "/", "") == each.value.image
+        ? "${var.functions_path}/${var.build_image_tag}/${each.value.image}.zip"
+        : each.value.image
+      )
+  )
 
   handler = "index.handler"
 
