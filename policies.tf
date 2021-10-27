@@ -173,7 +173,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
 
   # CI/CD secrets (read-only)
   dynamic "statement" {
-    for_each = var.cicd_secrets_path != null ? [1] : []
+    for_each = var.cicd_secrets_path != null && var.cicd_secrets_path != "" ? [1] : []
     content {
       actions = [
         "secretsmanager:DescribeSecret",
@@ -191,6 +191,16 @@ data "aws_iam_policy_document" "cicd_deploy" {
   # Deploy services
   statement {
     actions = [
+      # Container registry
+      "ecr:GetAuthorizationToken",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:TagResource",
+
       "route53:CreateHealthCheck",
       "iam:PutRolePolicy",
       # TODO: Limit apigateway and lambda actions
