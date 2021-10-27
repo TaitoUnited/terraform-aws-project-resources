@@ -39,6 +39,13 @@ resource "aws_acm_certificate" "domain_cert" {
   provider          = "aws.useast1"
 }
 
+data "aws_acm_certificate" "domain_cert" {
+  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+
+  domain          = each.value.name
+  provider        = "aws.useast1"
+}
+
 resource "aws_route53_record" "domain_cert_validation_record" {
   for_each = {
     for item in flatten([

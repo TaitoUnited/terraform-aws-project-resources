@@ -14,30 +14,23 @@
  * limitations under the License.
  */
 
-data "aws_acm_certificate" "domain_cert" {
-  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
-
-  domain          = each.value.name
-  provider        = "aws.useast1"
-}
-
 resource "aws_api_gateway_domain_name" "domain" {
-  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+  for_each        = {for item in (local.gatewayDomainEnabled ? local.domains : []): item.name => item}
 
   domain_name     = each.value.name
   certificate_arn = data.aws_acm_certificate.domain_cert[each.key].arn
 }
 
 resource "aws_api_gateway_base_path_mapping" "base_path" {
-  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+  for_each        = {for item in (local.gatewayDomainEnabled ? local.domains : []): item.name => item}
 
   domain_name     = aws_api_gateway_domain_name.domain[each.key].domain_name
   api_id          = aws_api_gateway_rest_api.gateway[0].id
   stage_name      = aws_api_gateway_stage.gateway[0].stage_name
 }
 
-resource "aws_route53_record" "domain_record" {
-  for_each        = {for item in (local.gatewayEnabled ? local.domains : []): item.name => item}
+resource "aws_route53_record" "gateway_domain_record" {
+  for_each        = {for item in (local.gatewayDomainEnabled ? local.domains : []): item.name => item}
 
   type            = "A"
   name            = aws_api_gateway_domain_name.domain[each.key].domain_name

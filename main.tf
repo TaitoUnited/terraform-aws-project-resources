@@ -188,4 +188,5 @@ locals {
     values(local.gatewayStaticContentsById),
   )) > 0
 
+  gatewayDomainEnabled = local.gatewayEnabled && local.ingress.class == "gateway"
 }
