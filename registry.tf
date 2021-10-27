@@ -21,7 +21,7 @@ resource "aws_ecr_repository" "image" {
 }
 
 resource "aws_ecr_repository" "builder" {
-  for_each = {for item in local.containerRegistryTargets: item => item}
+  for_each = {for item in local.containerRegistryBuilderTargets: item => item}
 
   name  = "${var.container_image_repository_path}/${each.value}-builder"
 }

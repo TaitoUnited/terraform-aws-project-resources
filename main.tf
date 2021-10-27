@@ -159,6 +159,16 @@ locals {
       : []
   )
 
+  containerRegistryBuilderTargets = (
+    var.create_container_image_repositories
+      ? distinct(concat(local.containerRegistryTargets, keys({
+          for name, service in local.servicesById:
+          name => service
+          if contains(var.container_image_builder_target_types, service.type != null ? service.type : "no-match")
+        })))
+      : []
+  )
+
   cloudfrontStaticContentsById = {
     for name, service in local.servicesById:
     name => service

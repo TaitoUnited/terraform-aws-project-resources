@@ -201,8 +201,14 @@ variable "container_image_repository_path" {
 
 variable "container_image_target_types" {
   type        = list(string)
-  default     = [ "static", "container", "function" ]
+  default     = [ "container" ]
   description = "Service types that require a container image repository."
+}
+
+variable "container_image_builder_target_types" {
+  type        = list(string)
+  default     = [ "static", "container", "function" ]
+  description = "Service types that require a container image repository for the builder image that is used for caching and testing."
 }
 
 variable "additional_container_images" {
