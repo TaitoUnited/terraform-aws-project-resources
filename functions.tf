@@ -16,8 +16,15 @@
 
 /* Function */
 
+resource "aws_cloudwatch_log_group" "function" {
+  for_each          = {for item in local.functionsById: item.id => item}
+  name              = "/aws/lambda/${var.project}-${each.key}-${var.env}"
+  retention_in_days = 30
+}
+
 # TODO: use layers https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html
 resource "aws_lambda_function" "function" {
+  depends_on = [ aws_cloudwatch_log_group.function ]
   for_each = {for item in local.functionsById: item.id => item}
 
   function_name  = "${var.project}-${each.key}-${var.env}"
