@@ -193,8 +193,12 @@ data "aws_iam_policy_document" "cicd_deploy" {
     actions = [
       # Container registry
       "ecr:GetAuthorizationToken",
+      "ecr:DescribeRepositories",
       "ecr:ListImages",
       "ecr:DescribeImages",
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchCheckLayerAvailability",
       "ecr:PutImage",
       "ecr:InitiateLayerUpload",
       "ecr:UploadLayerPart",
