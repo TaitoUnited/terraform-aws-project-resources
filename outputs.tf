@@ -41,3 +41,11 @@ output "cloudfront_zone_id" {
 output "redis_endpoint" {
   value = values(aws_elasticache_replication_group.redis)[*].primary_endpoint_address
 }
+
+output "cicd_role_arn" {
+  value = length(aws_iam_role.cicd) > 0 ? aws_iam_role.cicd[0].arn : null
+}
+
+output "cicd_service_account_arn" {
+  value = length(aws_iam_user.cicd) > 0 ? aws_iam_user.cicd[0].arn : null
+}

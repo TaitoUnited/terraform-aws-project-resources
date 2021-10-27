@@ -42,7 +42,7 @@ data "aws_iam_role" "gateway" {
 }
 
 resource "aws_iam_role" "cicd" {
-  count = var.create_service_accounts ? 1 : 0
+  count = var.create_cicd_role ? 1 : 0
   name = "${var.project}-${var.env}-cicd"
 
   assume_role_policy = <<EOF

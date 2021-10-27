@@ -16,6 +16,18 @@
 
 # Create flags
 
+variable "create_cicd_service_account" {
+  type        = bool
+  default     = false
+  description = "If true, a CI/CD user account is created."
+}
+
+variable "create_cicd_role" {
+  type        = bool
+  default     = false
+  description = "If true, CI/CD role is created (required for AWS CodeBuild)."
+}
+
 variable "create_domain" {
   type        = bool
   default     = false
@@ -244,13 +256,19 @@ variable "gateway_policies" {
 variable "secret_resource_path" {
   type    = string
   default = ""
-  description = "SSM resource path for secrets. If not set, the following is used by default: arn:aws:ssm:REGION:ACCOUNT_ID:parameter/ZONE_NAME/NAMESPACE"
+  description = "AWS Secret Manager resource path for secrets. If not set, the following is used by default: arn:aws:secretsmanager:REGION:ACCOUNT_ID:secret:/ZONE_NAME/NAMESPACE"
 }
 
 variable "secret_name_path" {
   type    = string
   default = ""
-  description = "SSM name path for secrets. If not set, the following is used by default: /ZONE_NAME/NAMESPACE"
+  description = "AWS Secret Manager name path for secrets. If not set, the following is used by default: /ZONE_NAME/NAMESPACE"
+}
+
+variable "cicd_secrets_path" {
+  type    = string
+  default = ""
+  description = "AWS Secret Manager name path for CI/CD secrets."
 }
 
 # Buckets
@@ -277,6 +295,16 @@ variable "functions_path" {
   type    = string
   default = ""
   description = "Storage bucket path for function zip-packages. Required if create_functions is true."
+}
+
+variable "state_bucket" {
+  type    = string
+  description = "Storage bucket for terraform state. Required if create_cicd_service_account or create_cicd_role is true."
+}
+
+variable "state_path" {
+  type    = string
+  description = "Storage bucket path for terraform state. Required if create_cicd_service_account or create_cicd_role is true."
 }
 
 # Uptime settings

@@ -135,3 +135,111 @@ data "aws_iam_policy_document" "bucket_object_admin" {
     ]
   }
 }
+
+# CI/CD
+
+data "aws_iam_policy_document" "cicd_deploy" {
+
+  # Environment info required on deployment (read-only)
+  statement {
+    actions = [
+      # Kubernetes
+      "eks:DescribeCluster",
+      "eks:ListClusters",
+
+      # DNS
+      "route53:ListHostedZones",
+      "route53:GetHostedZone",
+      "route53:ListTagsForResource",
+      "route53:ListResourceRecordSets",
+      "route53:ChangeResourceRecordSets",
+      "route53:GetChange",
+
+      # Certificates
+      "acm:ListCertificates",
+      "acm:DescribeCertificate",
+      "acm:ListTagsForCertificate",
+
+      # Roles
+      "iam:GetRole",
+      "iam:GetRolePolicy",
+      "iam:ListAttachedRolePolicies",
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+
+  # CI/CD secrets (read-only)
+  dynamic "statement" {
+    for_each = var.cicd_secrets_path != null ? [1] : []
+    content {
+      actions = [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetResourcePolicy",
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:ListSecretVersionIds"
+      ]
+      resources = [
+        "arn:aws:secretsmanager::${var.account_id}:secret:${var.cicd_secrets_path}*"
+      ]
+    }
+  }
+
+  # Deploy services
+  statement {
+    actions = [
+      "route53:CreateHealthCheck",
+      "iam:PutRolePolicy",
+      # TODO: Limit apigateway and lambda actions
+      "apigateway:*",
+      "lambda:*",
+    ]
+
+    # TODO: Limit permissions to specific resources only
+    resources = [
+      "*"
+    ]
+  }
+
+  # Save static assets to bucket
+  dynamic "statement" {
+    for_each = var.static_assets_bucket != null ? [1] : []
+    content {
+      actions = [
+        "s3:*"
+      ]
+      resources = [
+        "arn:aws:s3:::${var.static_assets_bucket}/${var.static_assets_path}/*"
+      ]
+    }
+  }
+
+  # Save function package to bucket
+  dynamic "statement" {
+    for_each = var.functions_bucket != null ? [1] : []
+    content {
+      actions = [
+        "s3:*"
+      ]
+      resources = [
+        "arn:aws:s3:::${var.functions_bucket}/${var.functions_path}/*"
+      ]
+    }
+  }
+
+  # Store terraform state to bucket
+  dynamic "statement" {
+    for_each = var.state_bucket != null ? [1] : []
+    content {
+      actions = [
+        "s3:*"
+      ]
+      resources = [
+        "arn:aws:s3:::${var.state_bucket}/${var.state_path}/*"
+      ]
+    }
+  }
+}

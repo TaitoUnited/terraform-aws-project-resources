@@ -19,3 +19,8 @@ resource "aws_iam_user" "service_account" {
 
   name  = each.value.id
 }
+
+resource "aws_iam_user" "cicd" {
+  count = var.create_cicd_service_account ? 1 : 0
+  name  = "${var.project}-${var.env}-cicd"
+}
