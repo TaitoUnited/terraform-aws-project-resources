@@ -159,6 +159,18 @@ locals {
       : []
   )
 
+  cloudfrontStaticContentsById = {
+    for name, service in local.servicesById:
+    name => service
+    if var.create_ingress && local.ingress.enabled && local.ingress.class == "cloudfront" && service.type == "static"
+  }
+
+  cloudfrontFunctionsById = {
+    for name, service in local.servicesById:
+    name => service
+    if var.create_ingress && local.ingress.enabled && service.type == "function" && service.path != null
+  }
+
   gatewayFunctionsById = {
     for name, service in local.servicesById:
     name => service
@@ -189,4 +201,6 @@ locals {
   )) > 0
 
   gatewayDomainEnabled = local.gatewayEnabled && local.ingress.class == "gateway"
+
+  cloudfrontEnabled = local.ingress.class == "cloudfront"
 }

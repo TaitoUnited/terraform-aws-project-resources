@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+# TODO: upgrade to apigatewayv2
+
 resource "aws_api_gateway_rest_api" "gateway" {
   count       = local.gatewayEnabled ? 1 : 0
   name        = "${var.project}-${var.env}"
