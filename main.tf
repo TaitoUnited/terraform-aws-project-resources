@@ -183,7 +183,7 @@ locals {
 
   cloudfrontFunctionsByReversePathLength = {
     for name, service in local.cloudfrontFunctionsById:
-    100 - length(service.path) => service
+    99 - length(service.path) => service
   }
 
   gatewayFunctionsById = {
