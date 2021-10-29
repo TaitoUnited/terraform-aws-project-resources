@@ -37,13 +37,14 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   custom_error_response {
     error_code = 404
+    response_code = 200
     response_page_path = "/index.html"
   }
 
-  aliases = concat(
+  aliases = compact(concat(
     [ each.value.name ],
     [ for alt in each.value.altDomains: alt.name ]
-  )
+  ))
 
   # TODO: add restrictions
   restrictions {
@@ -79,7 +80,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   origin {
     domain_name = data.aws_s3_bucket.static_assets.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
-    origin_path = var.static_assets_path
+    origin_path = "/${var.static_assets_path}"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.OAI.cloudfront_access_identity_path
