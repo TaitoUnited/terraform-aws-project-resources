@@ -138,6 +138,13 @@ data "aws_iam_policy_document" "bucket_object_admin" {
 
 # CI/CD
 
+resource "aws_iam_policy" "cicd_deploy" {
+  count  = var.create_cicd_service_account || var.create_cicd_role ? 1 : 0
+
+  name   = "${var.project}-${var.env}-cicd"
+  policy = data.aws_iam_policy_document.cicd_deploy.json
+}
+
 data "aws_iam_policy_document" "cicd_deploy" {
 
   # Environment info required on deployment (read-only)

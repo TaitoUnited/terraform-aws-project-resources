@@ -32,20 +32,20 @@ resource "aws_iam_user_policy_attachment" "cicd_policies" {
   policy_arn = each.value
 }
 
-resource "aws_iam_role_policy" "cicd_deploy" {
+resource "aws_iam_role_policy_attachment" "cicd_deploy" {
   depends_on = [ aws_iam_role.cicd ]
-  count = var.create_cicd_role ? 1 : 0
+  count      = var.create_cicd_role ? 1 : 0
 
-  role = aws_iam_role.cicd[0].name
-  policy = data.aws_iam_policy_document.cicd_deploy.json
+  role       = aws_iam_role.cicd[0].name
+  policy_arn = aws_iam_policy.cicd_deploy[0].arn
 }
 
-resource "aws_iam_user_policy" "cicd_deploy" {
+resource "aws_iam_user_policy_attachment" "cicd_deploy" {
   depends_on = [ aws_iam_user.cicd ]
-  count = var.create_cicd_service_account ? 1 : 0
+  count      = var.create_cicd_service_account ? 1 : 0
 
-  user = aws_iam_user.cicd[0].name
-  policy = data.aws_iam_policy_document.cicd_deploy.json
+  user       = aws_iam_user.cicd[0].name
+  policy_arn = aws_iam_policy.cicd_deploy[0].arn
 }
 
 # Gateway role
