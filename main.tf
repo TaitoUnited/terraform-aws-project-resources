@@ -181,6 +181,11 @@ locals {
     if var.create_ingress && local.ingress.enabled && service.type == "function" && service.path != null
   }
 
+  cloudfrontFunctionsByReversePathLength = {
+    for name, service in local.cloudfrontFunctionsById:
+    100 - length(service.path) => service
+  }
+
   gatewayFunctionsById = {
     for name, service in local.servicesById:
     name => service

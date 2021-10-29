@@ -119,7 +119,7 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   # API Gateway (functions)
   dynamic "ordered_cache_behavior" {
-    for_each = local.cloudfrontFunctionsById
+    for_each = local.cloudfrontFunctionsByReversePathLength
     content {
       # NOTE: it might be better to map "${ordered_cache_behavior.value.path}"
       # and "${ordered_cache_behavior.value.path}/*" separately
