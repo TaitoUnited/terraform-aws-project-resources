@@ -232,6 +232,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "ecr:TagResource",
 
       # Cloudfront
+      "cloudfront:UpdateDistribution",
       # "cloudfront:CreateCloudFrontOriginAccessIdentity",
       # "cloudfront:DeleteCloudFrontOriginAccessIdentity",
       # "route53:CreateHealthCheck",

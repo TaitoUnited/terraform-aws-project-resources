@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+# TODO: s3 private access point (optional feature)
+
 resource "aws_s3_bucket" "bucket" {
   for_each = {for item in local.bucketsById: item.id => item}
 
