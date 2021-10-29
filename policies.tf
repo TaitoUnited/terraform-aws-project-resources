@@ -212,6 +212,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
   }
 
   # Deploy services
+  # TODO: not all are required as first deploy can be run manually!
   statement {
     actions = [
       # Container registry

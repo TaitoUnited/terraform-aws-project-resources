@@ -41,10 +41,9 @@ resource "aws_cloudfront_distribution" "distribution" {
     response_page_path = "/index.html"
   }
 
-  aliases = compact(concat(
-    [ each.value.name ],
+  aliases = compact(
     [ for alt in each.value.altDomains: alt.name ]
-  ))
+  )
 
   # TODO: add restrictions
   restrictions {
@@ -131,7 +130,7 @@ resource "aws_cloudfront_distribution" "distribution" {
     content {
       path_pattern     = "${ordered_cache_behavior.value.path}/*"
       allowed_methods  = ["GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "DELETE"]
-      cached_methods   = []
+      cached_methods   = ["GET", "HEAD", "OPTIONS"]
       target_origin_id = local.gateway_origin_id
 
       forwarded_values {
