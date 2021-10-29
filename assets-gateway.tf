@@ -17,8 +17,7 @@
 /* Root path routing: / */
 
 resource "aws_api_gateway_method" "static_root_path" {
-  # TODO: count = local.gatewayEnabled && local.ingress.class == "gateway" ? 1 : 0
-  count         = local.gatewayEnabled ? 1 : 0
+  count         = local.gatewayEnabled && local.ingress.class == "gateway" ? 1 : 0
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
   resource_id   = aws_api_gateway_rest_api.gateway[0].root_resource_id
