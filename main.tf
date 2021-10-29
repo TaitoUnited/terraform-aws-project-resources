@@ -212,5 +212,5 @@ locals {
 
   gatewayDomainEnabled = local.gatewayEnabled && local.ingress.class == "gateway"
 
-  cloudfrontEnabled = local.ingress.enabled && local.ingress.class == "cloudfront"
+  cloudfrontEnabled = var.create_ingress && local.ingress.enabled && local.ingress.class == "cloudfront"
 }
