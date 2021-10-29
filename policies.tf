@@ -229,6 +229,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
       # Roles
       "iam:CreateRole",
       "iam:PutRolePolicy",
+      "iam:AttachRolePolicy",
 
       # Logs
       "logs:CreateLogGroup",
