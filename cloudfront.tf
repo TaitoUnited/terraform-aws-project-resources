@@ -20,11 +20,7 @@ data "aws_s3_bucket" "static_assets" {
 
 locals {
   s3_origin_id = "${var.project}-${var.env}-s3"
-  gateway_origin_id = "${var.project}-${var.env}-gateway"
-}
-
-resource "aws_cloudfront_origin_access_identity" "OAI" {
-  comment = "${var.project}-${var.env}-s3"
+  gateway_origin_id = "${var.project}-${var.env}-api-gateway"
 }
 
 resource "aws_cloudfront_distribution" "distribution" {
@@ -75,31 +71,11 @@ resource "aws_cloudfront_distribution" "distribution" {
     }
   }
 
-  # S3
+  # S3 as default origin
   origin {
     domain_name = data.aws_s3_bucket.static_assets.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
-    origin_path = "/${var.static_assets_path}"
-
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.OAI.cloudfront_access_identity_path
-    }
-  }
-
-  # API Gateway
-  dynamic "origin" {
-    for_each = length(aws_api_gateway_deployment.gateway) > 0 ? [ 1 ] : []
-    content {
-      domain_name = replace(aws_api_gateway_deployment.gateway[0].invoke_url, "/^https?://([^/]*).*/", "$1")
-      origin_id   = local.gateway_origin_id
-
-      custom_origin_config {
-    		http_port              = 80
-    		https_port             = 443
-    		origin_protocol_policy = "https-only"
-    		origin_ssl_protocols   = ["TLSv1.2"]
-    	}
-    }
+    origin_path = "/${var.static_assets_path}/${var.build_image_tag}/client"
   }
 
   # S3 as default origin
@@ -125,14 +101,34 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
 
   # API Gateway (functions)
+  dynamic "origin" {
+    for_each = length(aws_api_gateway_deployment.gateway) > 0 ? [ 1 ] : []
+    content {
+      domain_name = replace(aws_api_gateway_deployment.gateway[0].invoke_url, "/^https?://([^/]*).*/", "$1")
+      origin_id   = local.gateway_origin_id
+      origin_path = "/stage"
+
+      custom_origin_config {
+    		http_port              = 80
+    		https_port             = 443
+    		origin_protocol_policy = "https-only"
+    		origin_ssl_protocols   = ["TLSv1.2"]
+    	}
+    }
+  }
+
+  # API Gateway (functions)
   dynamic "ordered_cache_behavior" {
     for_each = local.cloudfrontFunctionsById
     content {
-      path_pattern     = "${ordered_cache_behavior.value.path}/*"
+      # NOTE: it might be better to map "${ordered_cache_behavior.value.path}"
+      # and "${ordered_cache_behavior.value.path}/*" separately
+      path_pattern     = "${ordered_cache_behavior.value.path}*"
       allowed_methods  = ["GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT", "DELETE"]
       cached_methods   = ["GET", "HEAD", "OPTIONS"]
       target_origin_id = local.gateway_origin_id
 
+      # TODO: we should prevent direct calls to apigw with api key
       forwarded_values {
         query_string = true
         cookies {
@@ -149,14 +145,27 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
 
   # S3 (static assets)
+  dynamic "origin" {
+    for_each = local.cloudfrontStaticContentsById
+    content {
+      domain_name = data.aws_s3_bucket.static_assets.bucket_regional_domain_name
+      origin_id   = "${local.s3_origin_id}-${origin.key}"
+      origin_path = "/${var.static_assets_path}/${var.build_image_tag}/${origin.key}"
+    }
+  }
+
+  # S3 (static assets)
   dynamic "ordered_cache_behavior" {
     for_each = local.cloudfrontStaticContentsById
     content {
-      path_pattern     = "${ordered_cache_behavior.value.path}/*"
+      # NOTE: it might be better to map "${ordered_cache_behavior.value.path}"
+      # and "${ordered_cache_behavior.value.path}/*" separately
+      path_pattern     = "${ordered_cache_behavior.value.path}*"
       allowed_methods  = ["GET", "HEAD", "OPTIONS"]
       cached_methods   = ["GET", "HEAD", "OPTIONS"]
       target_origin_id = local.s3_origin_id
 
+      # TODO: we should prevent direct calls to s3 with OAI
       forwarded_values {
         query_string = false
         headers      = ["Origin"]
