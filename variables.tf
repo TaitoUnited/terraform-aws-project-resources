@@ -305,11 +305,13 @@ variable "functions_path" {
 
 variable "state_bucket" {
   type    = string
+  default = ""
   description = "Storage bucket for terraform state. Required if create_cicd_service_account or create_cicd_role is true."
 }
 
 variable "state_path" {
   type    = string
+  default = ""
   description = "Storage bucket path for terraform state. Required if create_cicd_service_account or create_cicd_role is true."
 }
 
