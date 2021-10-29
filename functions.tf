@@ -113,6 +113,27 @@ resource "aws_api_gateway_resource" "function_parent_path" {
   path_part   = replace(each.value.path, "/", "")
 }
 
+resource "aws_api_gateway_method" "function_parent_path" {
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  resource_id   = aws_api_gateway_resource.function_parent_path[each.key].id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "function_parent_path" {
+  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+
+  rest_api_id = aws_api_gateway_rest_api.gateway[0].id
+  resource_id = aws_api_gateway_method.function_parent_path[each.key].resource_id
+  http_method = aws_api_gateway_method.function_parent_path[each.key].http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.function[each.key].invoke_arn
+}
+
 resource "aws_api_gateway_resource" "function_path" {
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
