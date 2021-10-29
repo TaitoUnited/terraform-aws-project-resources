@@ -143,6 +143,7 @@ data "aws_iam_policy_document" "secretreader" {
 # API Gateway
 
 resource "aws_lambda_permission" "apigw" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in (local.gatewayEnabled ? values(local.gatewayFunctionsById) : []): item.id => item}
 
   statement_id  = "AllowAPIGatewayInvoke"
