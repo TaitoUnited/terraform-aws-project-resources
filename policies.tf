@@ -171,21 +171,22 @@ data "aws_iam_policy_document" "cicd_deploy" {
     ]
   }
 
-  # CI/CD secrets (read-only)
-  dynamic "statement" {
-    for_each = var.cicd_secrets_path != null && var.cicd_secrets_path != "" ? [1] : []
-    content {
-      actions = [
-        "secretsmanager:DescribeSecret",
-        "secretsmanager:GetResourcePolicy",
-        "secretsmanager:GetSecretValue",
-        "secretsmanager:DescribeSecret",
-        "secretsmanager:ListSecretVersionIds"
-      ]
-      resources = [
-        "arn:aws:secretsmanager::${var.account_id}:secret:${var.cicd_secrets_path}*"
-      ]
-    }
+  # Secrets (read-only)
+  statement {
+    actions = [
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:GetResourcePolicy",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:ListSecretVersionIds"
+    ]
+    resources = concat(
+      [
+        "arn:aws:secretsmanager::${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-db-*",
+        "arn:aws:secretsmanager::${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-basic-auth.*"
+      ],
+      var.cicd_secrets_path != null && var.cicd_secrets_path != "" ? [ "arn:aws:secretsmanager::${var.account_id}:secret:${var.cicd_secrets_path}*" ] : []
+    )
   }
 
   # Deploy services
