@@ -143,9 +143,10 @@ data "aws_iam_policy_document" "cicd_deploy" {
   # Environment info required on deployment (read-only)
   statement {
     actions = [
-      # Kubernetes
-      "eks:DescribeCluster",
-      "eks:ListClusters",
+      # VPC
+      "ec2:DescribeVpcs",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeSecurityGroups",
 
       # DNS
       "route53:ListHostedZones",
@@ -155,6 +156,9 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "route53:ChangeResourceRecordSets",
       "route53:GetChange",
 
+      # Cloudfront
+      "cloudfront:GetCloudFrontOriginAccessIdentity",
+
       # Certificates
       "acm:ListCertificates",
       "acm:DescribeCertificate",
@@ -163,9 +167,27 @@ data "aws_iam_policy_document" "cicd_deploy" {
       # Roles
       "iam:GetRole",
       "iam:GetRolePolicy",
+      "iam:ListRolePolicies",
       "iam:ListAttachedRolePolicies",
+
+      # Logs
+      "logs:DescribeLogGroups",
+
+      # Container registry
+      "ecr:GetAuthorizationToken",
+      "ecr:DescribeRepositories",
+      "ecr:ListImages",
+      "ecr:DescribeImages",
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchCheckLayerAvailability",
+
+      # Kubernetes
+      "eks:DescribeCluster",
+      "eks:ListClusters",
     ]
 
+    # TODO: Limit permissions to specific resources only
     resources = [
       "*"
     ]
@@ -193,21 +215,25 @@ data "aws_iam_policy_document" "cicd_deploy" {
   statement {
     actions = [
       # Container registry
-      "ecr:GetAuthorizationToken",
-      "ecr:DescribeRepositories",
-      "ecr:ListImages",
-      "ecr:DescribeImages",
-      "ecr:BatchGetImage",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchCheckLayerAvailability",
       "ecr:PutImage",
       "ecr:InitiateLayerUpload",
       "ecr:UploadLayerPart",
       "ecr:CompleteLayerUpload",
       "ecr:TagResource",
 
+      # Cloudfront
+      "cloudfront:CreateCloudFrontOriginAccessIdentity",
+      "cloudfront:DeleteCloudFrontOriginAccessIdentity",
       "route53:CreateHealthCheck",
+
+      # Roles
+      "iam:CreateRole",
       "iam:PutRolePolicy",
+
+      # Logs
+      "logs:CreateLogGroup",
+      "logs:PutRetentionPolicy",
+
       # TODO: Limit apigateway and lambda actions
       "apigateway:*",
       "lambda:*",
@@ -224,7 +250,9 @@ data "aws_iam_policy_document" "cicd_deploy" {
     for_each = var.static_assets_bucket != null ? [1] : []
     content {
       actions = [
-        "s3:*"
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
       ]
       resources = [
         "arn:aws:s3:::${var.static_assets_bucket}/${var.static_assets_path}/*"
@@ -237,7 +265,9 @@ data "aws_iam_policy_document" "cicd_deploy" {
     for_each = var.functions_bucket != null ? [1] : []
     content {
       actions = [
-        "s3:*"
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
       ]
       resources = [
         "arn:aws:s3:::${var.functions_bucket}/${var.functions_path}/*"
@@ -250,7 +280,19 @@ data "aws_iam_policy_document" "cicd_deploy" {
     for_each = var.state_bucket != null ? [1] : []
     content {
       actions = [
-        "s3:*"
+        "s3:ListBucket"
+      ]
+      resources = [
+        "arn:aws:s3:::${var.state_bucket}"
+      ]
+    }
+  }
+  dynamic "statement" {
+    for_each = var.state_bucket != null ? [1] : []
+    content {
+      actions = [
+        "s3:GetObject",
+        "s3:PutObject"
       ]
       resources = [
         "arn:aws:s3:::${var.state_bucket}/${var.state_path}/*"
