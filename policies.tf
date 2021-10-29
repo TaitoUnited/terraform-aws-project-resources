@@ -164,6 +164,8 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "route53:GetChange",
 
       # Cloudfront
+      "cloudfront:GetDistribution",
+      "cloudfront:ListTagsForResource",
       "cloudfront:GetCloudFrontOriginAccessIdentity",
 
       # Certificates
@@ -178,6 +180,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "iam:ListAttachedRolePolicies",
 
       # Logs
+      "logs:ListTagsLogGroup",
       "logs:DescribeLogGroups",
 
       # Container registry
@@ -211,15 +214,14 @@ data "aws_iam_policy_document" "cicd_deploy" {
     ]
     resources = concat(
       [
-        "arn:aws:secretsmanager::${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-db-*",
-        "arn:aws:secretsmanager::${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-basic-auth.*"
+        "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-db-*",
+        "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:/${var.zone_name}/${var.namespace}/${var.project}-${var.env}-basic-auth.*"
       ],
       var.cicd_secrets_path != null && var.cicd_secrets_path != "" ? [ "arn:aws:secretsmanager::${var.account_id}:secret:${var.cicd_secrets_path}*" ] : []
     )
   }
 
   # Deploy services
-  # TODO: not all are required as first deploy can be run manually!
   statement {
     actions = [
       # Container registry
@@ -230,18 +232,18 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "ecr:TagResource",
 
       # Cloudfront
-      "cloudfront:CreateCloudFrontOriginAccessIdentity",
-      "cloudfront:DeleteCloudFrontOriginAccessIdentity",
-      "route53:CreateHealthCheck",
+      # "cloudfront:CreateCloudFrontOriginAccessIdentity",
+      # "cloudfront:DeleteCloudFrontOriginAccessIdentity",
+      # "route53:CreateHealthCheck",
 
       # Roles
-      "iam:CreateRole",
-      "iam:PutRolePolicy",
-      "iam:AttachRolePolicy",
+      # "iam:CreateRole",
+      # "iam:PutRolePolicy",
+      # "iam:AttachRolePolicy",
 
       # Logs
-      "logs:CreateLogGroup",
-      "logs:PutRetentionPolicy",
+      # "logs:CreateLogGroup",
+      # "logs:PutRetentionPolicy",
 
       # TODO: Limit apigateway and lambda actions
       "apigateway:*",
