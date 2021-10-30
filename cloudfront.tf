@@ -56,19 +56,9 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
   */
 
-  dynamic "viewer_certificate" {
-    for_each = var.create_domain_certificate ? [ 1 ] : []
-    content {
-      acm_certificate_arn = var.create_domain_certificate ? aws_acm_certificate.domain_cert[each.key].arn : data.aws_acm_certificate.domain_cert[each.key].arn
-      ssl_support_method = "sni-only"
-    }
-  }
-
-  dynamic "viewer_certificate" {
-    for_each = var.create_domain_certificate ? [ ] : [ 1 ]
-    content {
-      cloudfront_default_certificate = true
-    }
+  viewer_certificate {
+    acm_certificate_arn = data.aws_acm_certificate.domain_cert[each.key].arn
+    ssl_support_method = "sni-only"
   }
 
   # S3 as default origin
