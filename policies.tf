@@ -183,6 +183,18 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "logs:ListTagsLogGroup",
       "logs:DescribeLogGroups",
 
+      # Queues
+      "sqs:ListQueues",
+      "sqs:ListQueueTags",
+      "sqs:ListDeadLetterSourceQueues",
+      "sqs:GetQueueAttributes",
+      "sqs:GetQueueUrl",
+
+      # Topics
+      "sns:ListTopics",
+      "sns:GetTopicAttributes",
+      "sns:ListTagsForResource",
+
       # Container registry
       "ecr:GetAuthorizationToken",
       "ecr:DescribeRepositories",
