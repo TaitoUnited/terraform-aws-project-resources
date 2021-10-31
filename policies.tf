@@ -195,6 +195,11 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "sns:GetTopicAttributes",
       "sns:ListTagsForResource",
 
+      # Events
+      "events:DescribeRule",
+      "events:ListTagsForResource",
+      "events:ListTargetsByRule",
+
       # Container registry
       "ecr:GetAuthorizationToken",
       "ecr:DescribeRepositories",
