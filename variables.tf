@@ -65,6 +65,12 @@ variable "create_in_memory_databases" {
   description = "If true, in-memory databases are created."
 }
 
+variable "create_queues" {
+  type        = bool
+  default     = false
+  description = "If true, queues are created."
+}
+
 variable "create_topics" {
   type        = bool
   default     = false
@@ -352,8 +358,8 @@ variable "resources" {
     # })))
 
     ingress = optional(object({
-      class = optional(string)
       enabled = optional(bool)
+      class = optional(string)
       createMainDomain = optional(bool)
       domains = list(object({
         name = string
@@ -364,11 +370,58 @@ variable "resources" {
     }))
 
     services = optional(map(object({
+      # Common
       type = string
-      image = optional(string)
-      machineType = optional(string)
+      enabled = optional(bool) # TODO
       name = optional(string)
       location = optional(string)
+
+      # Routing
+      path = optional(string)
+      uptimePath = optional(string)
+
+      # Function or container
+      image = optional(string)
+      replicas = optional(number)
+      timeout = optional(number)
+      runtime = optional(string)
+      memoryRequest = optional(number)
+      deadLetterQueue = optional(string)
+      deadLetterTopic = optional(string)
+      secrets = optional(map(string))
+      env = optional(map(string))
+      cronJobs = optional(list(object({
+        name = string
+        schedule = string
+        command = string
+      })))
+      awsPolicy = optional(object({
+        Version = string
+        Statement = list(object({
+          Effect = string
+          Action = list(string)
+          Resource = string
+        }))
+      }))
+
+      # Database
+      machineType = optional(string)
+
+      # Queue
+      queues = optional(list(object({
+        name = string
+        events = list(string)
+      })))
+
+      # Topic
+      publishers = optional(list(object({
+        id = string
+      })))
+      subscribers = optional(list(object({
+        id = string
+      })))
+
+      # Bucket
       storageClass = optional(string)
       corsRules = optional(list(object({
         allowedOrigins = list(string)
@@ -376,10 +429,6 @@ variable "resources" {
         exposeHeaders = optional(list(string))
         allowedHeaders = optional(list(string))
         maxAgeSeconds = optional(number)
-      })))
-      queues = optional(list(object({
-        name = string
-        events = list(string)
       })))
       versioningEnabled = optional(bool)
       versioningRetainDays = optional(number)
@@ -400,28 +449,6 @@ variable "resources" {
       objectViewers = optional(list(object({
         id = string
       })))
-      replicas = optional(number)
-      path = optional(string)
-      uptimePath = optional(string)
-      timeout = optional(number)
-      runtime = optional(string)
-      memoryRequest = optional(number)
-      secrets = optional(map(string))
-      env = optional(map(string))
-      publishers = optional(list(object({
-        id = string
-      })))
-      subscribers = optional(list(object({
-        id = string
-      })))
-      awsPolicy = optional(object({
-        Version = string
-        Statement = list(object({
-          Effect = string
-          Action = list(string)
-          Resource = string
-        }))
-      }))
     })))
   })
   description = "Resources as JSON (see README.md). You can read values from a YAML file with yamldecode()."

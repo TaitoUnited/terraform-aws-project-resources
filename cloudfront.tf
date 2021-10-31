@@ -24,7 +24,11 @@ locals {
 }
 
 resource "aws_cloudfront_distribution" "distribution" {
-  depends_on = [ aws_acm_certificate_validation.domain_cert_validation ]
+  depends_on = [
+    aws_acm_certificate_validation.domain_cert_validation,
+    aws_lambda_function.function,
+    aws_api_gateway_integration.function,
+  ]
   for_each = {for item in (local.cloudfrontEnabled ? local.domains : []): item.name => item}
 
   enabled             = true

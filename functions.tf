@@ -52,7 +52,7 @@ resource "aws_lambda_function" "function" {
   runtime = (
     each.value.runtime != ""
       ? each.value.runtime
-      : "nodejs12.x"
+      : "nodejs14.x"
   )
 
   memory_size = (
@@ -67,6 +67,20 @@ resource "aws_lambda_function" "function" {
   }
 
   role = aws_iam_role.function[each.key].arn
+
+  dynamic "dead_letter_config" {
+    for_each = each.value.deadLetterQueue != null ? [ 1 ] : []
+    content {
+      target_arn = data.aws_sqs_queue.dead_letter[each.value.deadLetterQueue].arn
+    }
+  }
+
+  dynamic "dead_letter_config" {
+    for_each = each.value.deadLetterTopic != null ? [ 1 ] : []
+    content {
+      target_arn = data.aws_sqs_topic.dead_letter[each.value.deadLetterTopic].arn
+    }
+  }
 
   environment {
     variables = merge(
@@ -106,6 +120,7 @@ EOF
 /* Routing */
 
 resource "aws_api_gateway_resource" "function_parent_path" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
@@ -114,6 +129,7 @@ resource "aws_api_gateway_resource" "function_parent_path" {
 }
 
 resource "aws_api_gateway_method" "function_parent_path" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
@@ -123,6 +139,7 @@ resource "aws_api_gateway_method" "function_parent_path" {
 }
 
 resource "aws_api_gateway_integration" "function_parent_path" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
@@ -135,6 +152,7 @@ resource "aws_api_gateway_integration" "function_parent_path" {
 }
 
 resource "aws_api_gateway_resource" "function_path" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
@@ -143,6 +161,7 @@ resource "aws_api_gateway_resource" "function_path" {
 }
 
 resource "aws_api_gateway_method" "function_path" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
@@ -152,6 +171,7 @@ resource "aws_api_gateway_method" "function_path" {
 }
 
 resource "aws_api_gateway_integration" "function" {
+  depends_on = [ aws_lambda_function.function ]
   for_each = {for item in local.gatewayFunctionsById: item.id => item}
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id

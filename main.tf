@@ -26,6 +26,17 @@ provider "aws" {
 }
 
 locals {
+  # Set defaults
+  resources = defaults(var.resources, {
+    backupEnabled = false
+    uptimeEnabled = false
+
+    ingress = {
+      enabled = false
+      class = "cloudfront"
+      createMainDomain = false
+    }
+  })
 
   secret_resource_path = var.secret_resource_path != "" ? var.secret_resource_path : "arn:aws:secretsmanager:${var.region}:${var.account_id}:secret:/${var.zone_name}/${var.namespace}"
 
@@ -33,14 +44,14 @@ locals {
 
   serviceAccounts = (
     var.create_service_accounts
-    ? coalesce(var.resources.serviceAccounts, [])
+    ? coalesce(local.resources.serviceAccounts, [])
     : []
   )
 
-  ingress = defaults(var.resources.ingress, { enabled: false })
+  ingress = local.resources.ingress
 
   domains = [
-    for domain in coalesce(var.resources.ingress.domains, []):
+    for domain in coalesce(local.ingress.domains, []):
     merge(domain, {
       mainDomain = join(".",
         slice(
@@ -52,18 +63,18 @@ locals {
     })
   ]
 
-  services = coalesce(var.resources.services, {})
+  services = coalesce(local.resources.services, {})
 
   servicesById = {
     for id, service in local.services:
     id => merge(service, { id: id })
+    if service.enabled == null || service.enabled == true
   }
 
-  uptimeEnabled = coalesce(var.resources.uptimeEnabled, true)
   uptimeTargetsById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_uptime_checks && local.uptimeEnabled && service.uptimePath != null
+    if var.create_uptime_checks && local.resources.uptimeEnabled && service.uptimePath != null
   }
 
   containersById = {
@@ -90,6 +101,34 @@ locals {
     if var.create_function_permissions && service.type == "function" && service.awsPolicy != null
   }
 
+  functionCronJobsById = {
+    for cronJob in flatten([
+      for id, function in local.functionsById: [
+        for cronJob in coalesce(function.cronJobs, []):
+        merge(cronJob, {
+          id = "${id}-${cronJob.name}"
+          function = function
+        })
+      ]
+    ]): cronJob.id => cronJob
+  }
+
+  deadLetterQueuesByName = {
+    for name, service in local.functionsById:
+    service.deadLetterQueue => {
+      name = service.deadLetterQueue
+    }
+    if service.deadLetterQueue != null
+  }
+
+  deadLetterTopicsByName = {
+    for name, service in local.functionsById:
+    service.deadLetterTopic => {
+      name = service.deadLetterTopic
+    }
+    if service.deadLetterTopic != null
+  }
+
   databasesById = {
     for name, service in local.servicesById:
     name => service
@@ -100,6 +139,12 @@ locals {
     for name, service in local.servicesById:
     name => service
     if var.create_in_memory_databases && (service.type == "redis")
+  }
+
+  queuesById = {
+    for name, service in local.servicesById:
+    name => service
+    if var.create_queues && service.type == "queue"
   }
 
   topicsById = {
@@ -154,7 +199,7 @@ locals {
       ? distinct(concat(var.additional_container_images, keys({
           for name, service in local.servicesById:
           name => service
-          if contains(var.container_image_target_types, service.type != null ? service.type : "no-match")
+          if contains(var.container_image_target_types, service.type != null && service.image == null ? service.type : "no-match")
         })))
       : []
   )
@@ -164,7 +209,7 @@ locals {
       ? distinct(concat(local.containerRegistryTargets, keys({
           for name, service in local.servicesById:
           name => service
-          if contains(var.container_image_builder_target_types, service.type != null ? service.type : "no-match")
+          if contains(var.container_image_builder_target_types, service.type != null && service.image == null ? service.type : "no-match")
         })))
       : []
   )

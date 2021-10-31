@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-resource "aws_sns_topic" "topic" {
-  for_each = {for item in local.topicsById: item.id => item}
+resource "aws_sqs_queue" "queue" {
+  for_each = {for item in local.queuesById: item.id => item}
 
   name  = each.value.name
 }
 
-data "aws_sns_topic" "dead_letter" {
-  for_each = local.deadLetterTopicsByName
+data "aws_sqs_queue" "dead_letter" {
+  for_each = local.deadLetterQueuesByName
   name = each.key
 }

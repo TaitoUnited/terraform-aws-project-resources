@@ -32,8 +32,10 @@ stack:
       path: /api
       uptimePath: /api/uptimez
       timeout: 3
-      runtime: nodejs12.x
+      runtime: nodejs14.x
       memoryRequest: 128
+      deadLetterQueue: my-project-prod-dlq
+      # deadLetterTopic:
       secrets:
         DATABASE_PASSWORD: my-project-prod-app
         REDIS_PASSWORD: ${taito_project}-${taito_env}-redis.secretKey
@@ -50,6 +52,10 @@ stack:
         REDIS_PORT: 6379
         S3_BUCKET: my-project-prod
         S3_REGION: us-east-1
+      cronJobs:
+        - name: refresh
+          schedule: cron(0 * * * *)
+          command: refresh
       # Example: Allow bucket/topic access with awsPolicy instead of service account
       awsPolicy:
         Version: '2012-10-17'
@@ -64,6 +70,10 @@ stack:
             Action:
               - sns:Publish
             Resource: 'arn:aws:sns:::my-project-prod-jobs'
+
+    dlq:
+      type: queue
+      name: my-project-prod-dlq
 
     jobs:
       type: topic
@@ -145,6 +155,7 @@ With `create_*` variables you can choose which resources are created/updated in 
   create_storage_buckets              = true
   create_databases                    = true
   create_in_memory_databases          = true
+  create_queues                       = true
   create_topics                       = true
   create_service_accounts             = true
   create_uptime_checks                = true
