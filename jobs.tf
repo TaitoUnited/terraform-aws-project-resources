@@ -17,12 +17,8 @@
 resource "aws_cloudwatch_event_rule" "function_cron_job" {
   for_each = local.functionCronJobsById
 
-  name                = each.value.name
+  name                = "${var.project}-${each.value.function.id}-${var.env}-${each.value.name}"
   schedule_expression = each.value.schedule
-
-  event_pattern       = jsonencode({
-    "detail-type": [ each.value.command ]
-  })
 }
 
 resource "aws_cloudwatch_event_target" "function_cron_job" {
