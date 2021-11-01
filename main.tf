@@ -237,6 +237,18 @@ locals {
     if var.create_ingress && local.ingress.enabled && service.type == "function" && service.path != null
   }
 
+  gatewayFunctionsLevel0ByPath = {
+    for id, service in local.gatewayFunctionsById:
+    service.path => service
+    if length(split("/", service.path)) == 2
+  }
+
+  gatewayFunctionsLevel1ByPath = {
+    for id, service in local.gatewayFunctionsById:
+    service.path => service
+    if length(split("/", service.path)) == 3
+  }
+
   gatewayStaticContentsById = {
     for name, service in local.servicesById:
     name => service

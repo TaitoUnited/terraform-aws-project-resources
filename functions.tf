@@ -117,68 +117,135 @@ resource "aws_iam_role" "function" {
 EOF
 }
 
-/* Routing */
+/* Routing: level 0 */
 
-resource "aws_api_gateway_resource" "function_parent_path" {
-  depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
-
-  rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  parent_id   = aws_api_gateway_rest_api.gateway[0].root_resource_id
-  path_part   = replace(each.value.path, "/", "")
-}
-
-resource "aws_api_gateway_method" "function_parent_path" {
-  depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+resource "aws_api_gateway_resource" "function_parent_path0" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel0ByPath
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
-  resource_id   = aws_api_gateway_resource.function_parent_path[each.key].id
+  parent_id     = aws_api_gateway_rest_api.gateway[0].root_resource_id
+  path_part     = split("/", each.value.path)[1]
+}
+
+resource "aws_api_gateway_method" "function_parent_path0" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel0ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  resource_id   = aws_api_gateway_resource.function_parent_path0[each.key].id
   http_method   = "ANY"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "function_parent_path" {
+resource "aws_api_gateway_integration" "function_parent_path0" {
   depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+  for_each    = local.gatewayFunctionsLevel0ByPath
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_method.function_parent_path[each.key].resource_id
-  http_method = aws_api_gateway_method.function_parent_path[each.key].http_method
+  resource_id = aws_api_gateway_method.function_parent_path0[each.key].resource_id
+  http_method = aws_api_gateway_method.function_parent_path0[each.key].http_method
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.function[each.key].invoke_arn
+  uri                     = aws_lambda_function.function[each.value.id].invoke_arn
 }
 
-resource "aws_api_gateway_resource" "function_path" {
-  depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
-
-  rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  parent_id   = aws_api_gateway_resource.function_parent_path[each.key].id
-  path_part   = "{proxy+}"
-}
-
-resource "aws_api_gateway_method" "function_path" {
-  depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+resource "aws_api_gateway_resource" "function_path0" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel0ByPath
 
   rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
-  resource_id   = aws_api_gateway_resource.function_path[each.key].id
+  parent_id     = aws_api_gateway_resource.function_parent_path0[each.key].id
+  path_part     = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "function_path0" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel0ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  resource_id   = aws_api_gateway_resource.function_path0[each.key].id
   http_method   = "ANY"
   authorization = "NONE"
 }
 
-resource "aws_api_gateway_integration" "function" {
+resource "aws_api_gateway_integration" "function0" {
   depends_on = [ aws_lambda_function.function ]
-  for_each = {for item in local.gatewayFunctionsById: item.id => item}
+  for_each    = local.gatewayFunctionsLevel0ByPath
 
   rest_api_id = aws_api_gateway_rest_api.gateway[0].id
-  resource_id = aws_api_gateway_method.function_path[each.key].resource_id
-  http_method = aws_api_gateway_method.function_path[each.key].http_method
+  resource_id = aws_api_gateway_method.function_path0[each.key].resource_id
+  http_method = aws_api_gateway_method.function_path0[each.key].http_method
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = aws_lambda_function.function[each.key].invoke_arn
+  uri                     = aws_lambda_function.function[each.value.id].invoke_arn
+}
+
+/* Routing: level 1 */
+
+resource "aws_api_gateway_resource" "function_parent_path1" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  # parent_id     = aws_api_gateway_rest_api.gateway[0].root_resource_id
+  parent_id     = aws_api_gateway_resource.function_parent_path0["/${split("/", each.value.path)[1]}"].id
+  path_part     = split("/", each.value.path)[2]
+}
+
+resource "aws_api_gateway_method" "function_parent_path1" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  resource_id   = aws_api_gateway_resource.function_parent_path1[each.key].id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "function_parent_path1" {
+  depends_on = [ aws_lambda_function.function ]
+  for_each    = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id = aws_api_gateway_rest_api.gateway[0].id
+  resource_id = aws_api_gateway_method.function_parent_path1[each.key].resource_id
+  http_method = aws_api_gateway_method.function_parent_path1[each.key].http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.function[each.value.id].invoke_arn
+}
+
+resource "aws_api_gateway_resource" "function_path1" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  parent_id     = aws_api_gateway_resource.function_parent_path1[each.key].id
+  path_part     = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "function_path1" {
+  depends_on    = [ aws_lambda_function.function ]
+  for_each      = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id   = aws_api_gateway_rest_api.gateway[0].id
+  resource_id   = aws_api_gateway_resource.function_path1[each.key].id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "function1" {
+  depends_on = [ aws_lambda_function.function ]
+  for_each    = local.gatewayFunctionsLevel1ByPath
+
+  rest_api_id = aws_api_gateway_rest_api.gateway[0].id
+  resource_id = aws_api_gateway_method.function_path1[each.key].resource_id
+  http_method = aws_api_gateway_method.function_path1[each.key].http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.function[each.value.id].invoke_arn
 }

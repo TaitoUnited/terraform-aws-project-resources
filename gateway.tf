@@ -26,7 +26,8 @@ resource "aws_api_gateway_deployment" "gateway" {
     aws_api_gateway_integration.static_root_path,
     aws_api_gateway_integration.static_parent_path,
     aws_api_gateway_integration.static_path,
-    aws_api_gateway_integration.function
+    aws_api_gateway_integration.function0,
+    aws_api_gateway_integration.function1
   ]
   count       = local.gatewayEnabled ? 1 : 0
 
