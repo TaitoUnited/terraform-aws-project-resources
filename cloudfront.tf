@@ -38,7 +38,9 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   custom_error_response {
     error_code = 404
-    response_code = 200
+    # TODO: use custom_error_response only for application gui paths and
+    # return 200 code
+    response_code = 404
     response_page_path = "/index.html"
   }
 
