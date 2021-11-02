@@ -164,6 +164,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "route53:GetChange",
 
       # Cloudfront
+      "cloudfront:ListDistributions",
       "cloudfront:GetDistribution",
       "cloudfront:ListTagsForResource",
       "cloudfront:GetCloudFrontOriginAccessIdentity",
@@ -250,6 +251,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
 
       # Cloudfront
       "cloudfront:UpdateDistribution",
+      "cloudfront:CreateInvalidation",
       # "cloudfront:CreateCloudFrontOriginAccessIdentity",
       # "cloudfront:DeleteCloudFrontOriginAccessIdentity",
       # "route53:CreateHealthCheck",
