@@ -15,12 +15,12 @@
  */
 
 resource "aws_sqs_queue" "queue" {
-  for_each = {for item in local.queuesById: item.id => item}
+  for_each    = local.queuesById
 
-  name     = each.value.name
-
+  name        = each.value.name
+  fifo_queue  = coalesce(each.value.queueType, "normal") == "fifo"
+  
   visibility_timeout_seconds = each.value.visibilityTimeout
-  fifo_queue                 = coalesce(each.value.queueType, "") == "fifo"
 }
 
 data "aws_sqs_queue" "dead_letter" {
