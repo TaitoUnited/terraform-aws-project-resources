@@ -113,6 +113,24 @@ locals {
     ]): cronJob.id => cronJob
   }
 
+  functionSourcesById = {
+    for source in flatten([
+      for id, function in local.functionsById: [
+        for source in coalesce(function.sources, []):
+        merge(source, {
+          id = "${id}-${source.name}"
+          function = function
+        })
+      ]
+    ]): source.id => source
+  }
+
+  functionSqsSourcesById = {
+    for id, source in local.functionSourcesById:
+    id => source
+    if source.type == "queue"
+  }
+
   deadLetterQueuesByName = {
     for name, service in local.functionsById:
     service.deadLetterQueue => {

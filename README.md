@@ -34,13 +34,11 @@ stack:
       timeout: 3
       runtime: nodejs14.x
       memoryRequest: 128
-      deadLetterQueue: my-project-prod-dlq
-      # deadLetterTopic:
       secrets:
         DATABASE_PASSWORD: my-project-prod-app
         REDIS_PASSWORD: ${taito_project}-${taito_env}-redis.secretKey
       env:
-        TOPIC_JOBS: my-project-prod-jobs
+        TOPIC_NOTIFICATIONS: my-project-prod-notifications
         DATABASE_HOST: my-postgres.c45t0ln04uqh.us-east-1.rds.amazonaws.com
         DATABASE_PORT: 5432
         DATABASE_SSL_ENABLED: true
@@ -52,10 +50,6 @@ stack:
         REDIS_PORT: 6379
         S3_BUCKET: my-project-prod
         S3_REGION: us-east-1
-      cronJobs:
-        - name: refresh
-          schedule: cron(0 * * * *)
-          command: refresh
       # Example: Allow bucket/topic access with awsPolicy instead of service account
       awsPolicy:
         Version: '2012-10-17'
@@ -69,15 +63,43 @@ stack:
           - Effect: Allow
             Action:
               - sns:Publish
-            Resource: 'arn:aws:sns:::my-project-prod-jobs'
+            Resource: 'arn:aws:sns:::my-project-prod-notifications'
+
+    worker:
+      type: function
+      timeout: 900
+      runtime: nodejs14.x
+      memoryRequest: 512
+      deadLetterQueue: my-project-prod-dlq
+      # deadLetterTopic:
+      secrets:
+        DATABASE_PASSWORD: my-project-prod-app
+        DATABASE_HOST: my-postgres.c45t0ln04uqh.us-east-1.rds.amazonaws.com
+        DATABASE_PORT: 5432
+        DATABASE_SSL_ENABLED: true
+        DATABASE_NAME: my-project-prod
+        DATABASE_USER: my-project-prod-app
+        DATABASE_POOL_MIN: 5
+        DATABASE_POOL_MAX: 10
+      sources:
+        - type: queue
+          name: my-project-prod-jobs
+      cronJobs:
+        - name: refresh
+          schedule: cron(0 * * * *)
+          command: refresh
 
     dlq:
       type: queue
       name: my-project-prod-dlq
 
     jobs:
-      type: topic
+      type: queue
       name: my-project-prod-jobs
+
+    notifications:
+      type: topic
+      name: my-project-prod-notifications
       subscribers:
         - id: my-project-prod-worker
 
@@ -90,7 +112,7 @@ stack:
         # Example: Allow bucket/topic access with service account instead of awsPolicy
         SERVICE_ACCOUNT_KEY: my-project-prod-worker-serviceaccount.key
       env:
-        TOPIC_JOBS: my-project-prod-jobs
+        TOPIC_NOTIFICATIONS: my-project-prod-notifications
         S3_BUCKET: my-project-prod
         S3_REGION: us-east-1
 
