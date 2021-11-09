@@ -383,6 +383,7 @@ variable "resources" {
       # Function or container
       image = optional(string)
       replicas = optional(number)
+      concurrency = optional(number)
       timeout = optional(number)
       runtime = optional(string)
       memoryRequest = optional(number)

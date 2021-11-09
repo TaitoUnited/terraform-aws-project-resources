@@ -67,6 +67,7 @@ stack:
 
     worker:
       type: function
+      concurrency: 5
       timeout: 100
       runtime: nodejs14.x
       memoryRequest: 512

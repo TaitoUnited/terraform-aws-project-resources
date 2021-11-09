@@ -43,6 +43,8 @@ resource "aws_lambda_function" "function" {
 
   handler = "index.handler"
 
+  reserved_concurrent_executions = coalesce(each.value.concurrency, -1)
+
   timeout = (
     each.value.timeout != ""
       ? each.value.timeout
