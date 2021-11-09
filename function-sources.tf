@@ -25,4 +25,5 @@ resource "aws_lambda_event_source_mapping" "function_sqs_source" {
 
   event_source_arn = data.aws_sqs_queue.function_sqs_source[each.key].arn
   function_name    = aws_lambda_function.function[each.value.function.id].arn
+  batch_size       = each.value.batchSize
 }

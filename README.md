@@ -67,7 +67,7 @@ stack:
 
     worker:
       type: function
-      timeout: 900
+      timeout: 100
       runtime: nodejs14.x
       memoryRequest: 512
       deadLetterQueue: my-project-prod-dlq
@@ -83,7 +83,8 @@ stack:
         DATABASE_POOL_MAX: 10
       sources:
         - type: queue
-          name: my-project-prod-jobs
+          name: my-project-prod-jobs.fifo
+          batchSize: 5
       cronJobs:
         - name: refresh
           schedule: cron(0 * * * *)
@@ -95,9 +96,9 @@ stack:
 
     jobs:
       type: queue
-      name: my-project-prod-jobs
+      name: my-project-prod-jobs.fifo
       queueType: fifo
-      visibilityTimeout: 900
+      visibilityTimeout: 600
 
     notifications:
       type: topic

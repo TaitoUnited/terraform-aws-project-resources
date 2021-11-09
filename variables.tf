@@ -390,6 +390,11 @@ variable "resources" {
       deadLetterTopic = optional(string)
       secrets = optional(map(string))
       env = optional(map(string))
+      sources = optional(list(object({
+        type = string
+        name = string
+        batchSize = optional(number)
+      })))
       cronJobs = optional(list(object({
         name = string
         schedule = string
