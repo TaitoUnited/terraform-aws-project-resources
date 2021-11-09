@@ -408,10 +408,8 @@ variable "resources" {
       machineType = optional(string)
 
       # Queue
-      queues = optional(list(object({
-        name = string
-        events = list(string)
-      })))
+      queueType = optional(string)
+      visibilityTimeout = optional(number)
 
       # Topic
       publishers = optional(list(object({
@@ -440,6 +438,10 @@ variable "resources" {
       backupRetainDays = optional(number)
       backupLocation = optional(string)
       backupLock = optional(bool)
+      queues = optional(list(object({
+        name = string
+        events = list(string)
+      })))
       admins = optional(list(object({
         id = string
       })))

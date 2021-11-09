@@ -96,6 +96,8 @@ stack:
     jobs:
       type: queue
       name: my-project-prod-jobs
+      queueType: fifo
+      visibilityTimeout: 900
 
     notifications:
       type: topic
