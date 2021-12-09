@@ -36,14 +36,6 @@ resource "aws_cloudfront_distribution" "distribution" {
   is_ipv6_enabled     = true
   default_root_object = "index.html"
 
-  custom_error_response {
-    error_code = 404
-    # TODO: use custom_error_response only for application gui paths and
-    # return 200 code
-    response_code = 404
-    response_page_path = "/index.html"
-  }
-
   aliases = compact(concat(
     [ each.value.name ],
     [ for alt in each.value.altDomains: alt.name ]
@@ -163,6 +155,11 @@ resource "aws_cloudfront_distribution" "distribution" {
       cached_methods   = ["GET", "HEAD", "OPTIONS"]
       target_origin_id = local.s3_origin_id
 
+      function_association {
+        event_type   = "viewer-request"
+        function_arn = aws_cloudfront_function.cloudfront_viewer_request[0].arn
+      }
+
       # TODO: we should prevent direct calls to s3 with OAI
       forwarded_values {
         query_string = false
@@ -181,4 +178,13 @@ resource "aws_cloudfront_distribution" "distribution" {
     }
   }
 
+}
+
+resource "aws_cloudfront_function" "cloudfront_viewer_request" {
+  count   = local.cloudfrontEnabled && length(local.domains) > 0 ? 1 : 0
+
+  name    = "${var.project}-${var.env}-cloudfront-viewer-request"
+  runtime = "cloudfront-js-1.0"
+  publish = true
+  code    = file("${path.module}/cloudfront-viewer-request.js")
 }

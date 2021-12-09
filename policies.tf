@@ -168,6 +168,8 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "cloudfront:GetDistribution",
       "cloudfront:ListTagsForResource",
       "cloudfront:GetCloudFrontOriginAccessIdentity",
+      "cloudfront:DescribeFunction",
+      "cloudfront:GetFunction",
 
       # Certificates
       "acm:ListCertificates",
