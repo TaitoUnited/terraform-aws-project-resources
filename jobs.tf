@@ -31,7 +31,7 @@ resource "aws_cloudwatch_event_target" "function_cron_job" {
 resource "aws_lambda_permission" "allow_cloudwatch" {
   for_each      = local.functionCronJobsById
 
-  statement_id  = "AllowExecutionFromCloudWatch"
+  statement_id  = "${var.project}-${each.value.function.id}-${var.env}-${each.value.name}-cloudwatch"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.function[each.value.function.id].function_name
   principal     = "events.amazonaws.com"
