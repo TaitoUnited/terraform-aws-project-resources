@@ -188,7 +188,7 @@ locals {
   bucketsById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_storage_buckets && service.type == "bucket" && service.enabled != false
+    if var.create_storage_buckets && service.type == "bucket"
   }
 
   bucketAdmins = flatten([
