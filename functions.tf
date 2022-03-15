@@ -93,6 +93,19 @@ resource "aws_lambda_function" "function" {
       }
     )
   }
+
+  tags = merge(
+    local.tags,
+    {
+      name = "${var.project}-${each.key}-${var.env}"
+      key = each.key
+      image = coalesce(each.value.image, each.key)
+    },
+    {
+      for key, value in each.value.tags:
+      key => value
+    }
+  )
 }
 
 /* Role */

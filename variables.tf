@@ -375,6 +375,7 @@ variable "resources" {
       enabled = optional(bool) # TODO
       name = optional(string)
       location = optional(string)
+      tags = optional(map(string))
 
       # Routing
       path = optional(string)

@@ -34,6 +34,8 @@ stack:
       timeout: 3
       runtime: nodejs14.x
       memoryRequest: 128
+      tags:
+        customtag: customvalue
       secrets:
         DATABASE_PASSWORD: my-project-prod-app
         REDIS_PASSWORD: ${taito_project}-${taito_env}-redis.secretKey
