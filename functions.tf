@@ -102,7 +102,7 @@ resource "aws_lambda_function" "function" {
       image = coalesce(each.value.image, each.key)
     },
     {
-      for key, value in coalesce(each.value.tags, []):
+      for key, value in (each.value.tags != null ? each.value.tags : []):
       key => value
     }
   )
