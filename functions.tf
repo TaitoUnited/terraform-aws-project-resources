@@ -98,7 +98,7 @@ resource "aws_lambda_function" "function" {
     local.tags,
     {
       name = "${var.project}-${each.key}-${var.env}"
-      key = each.key
+      service = each.key
       image = coalesce(each.value.image, each.key)
     },
     {
