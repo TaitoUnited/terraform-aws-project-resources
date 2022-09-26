@@ -27,16 +27,7 @@ provider "aws" {
 
 locals {
   # Set defaults
-  resources = defaults(var.resources, {
-    backupEnabled = false
-    uptimeEnabled = false
-
-    ingress = {
-      enabled = false
-      class = "cloudfront"
-      createMainDomain = false
-    }
-  })
+  resources = var.resources
 
   tags = {
     project = var.project
@@ -240,7 +231,7 @@ locals {
   cloudfrontStaticContentsById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_ingress && local.ingress.enabled && local.ingress.class == "cloudfront" && service.type == "static"
+    if var.create_ingress && local.ingress.enabled && (local.ingress.class == "cloudfront" || local.ingress.class == null) && service.type == "static"
   }
 
   cloudfrontFunctionsById = {
@@ -297,5 +288,5 @@ locals {
 
   gatewayDomainEnabled = local.gatewayEnabled && local.ingress.class == "gateway"
 
-  cloudfrontEnabled = var.create_ingress && local.ingress.enabled && local.ingress.class == "cloudfront"
+  cloudfrontEnabled = var.create_ingress && local.ingress.enabled && (local.ingress.class == "cloudfront" || local.ingress.class == null)
 }
