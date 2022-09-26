@@ -288,5 +288,5 @@ locals {
 
   gatewayDomainEnabled = local.gatewayEnabled && local.ingress.class == "gateway"
 
-  cloudfrontEnabled = var.create_ingress && local.ingress.enabled && (local.ingress.class == "cloudfront" || local.ingress.class == null)
+  cloudfrontEnabled = var.create_ingress && local.ingress.enabled && (local.ingress.class == "cloudfront" || local.ingress.class == null)
 }
