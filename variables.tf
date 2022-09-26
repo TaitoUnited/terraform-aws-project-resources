@@ -363,8 +363,10 @@ variable "resources" {
       createMainDomain = optional(bool)
       domains = list(object({
         name = string
+        mainDomain = optional(string)
         altDomains = list(object({
           name = string
+          mainDomain = optional(string)
         }))
       }))
     }))

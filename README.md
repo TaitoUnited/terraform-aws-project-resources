@@ -13,6 +13,7 @@ stack:
     createMainDomain: false
     domains:
       - name: myproject.mydomain.com
+        mainDomain: mydomain.com
         altDomains:
           - name: www.myproject.mydomain.com
 

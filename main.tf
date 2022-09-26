@@ -49,11 +49,14 @@ locals {
   domains = [
     for domain in coalesce(local.ingress.domains, []):
     merge(domain, {
-      mainDomain = join(".",
-        slice(
-          split(".", domain.name),
-          length(split(".", domain.name)) > 2 ? 1 : 0,
-          length(split(".", domain.name))
+      mainDomain = coalesce(
+        domain.mainDomain, 
+        join(".",
+          slice(
+            split(".", domain.name),
+            length(split(".", domain.name)) > 2 ? 1 : 0,
+            length(split(".", domain.name))
+          )
         )
       )
     })
