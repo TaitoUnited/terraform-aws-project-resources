@@ -115,11 +115,11 @@ variable "create_service_accounts" {
 # }
 
 # NOTE: NOT SUPPORTED BY THE AWS MODULE
-# variable "create_api_keys" {
-#   type        = bool
-#   default     = false
-#   description = "If true, api keys are created. (TODO)"
-# }
+variable "create_api_keys" {
+  type        = bool
+  default     = false
+  description = "If true, api keys are created. (TODO)"
+}
 
 variable "create_uptime_checks" {
   type        = bool
@@ -344,18 +344,25 @@ variable "resources" {
     #   rule = string
     # })))
 
-    serviceAccounts = optional(list(object({
-      id = string
-      # NOTE: NOT SUPPORTED BY THE AWS MODULE
-      # roles = list(string)
-    })))
+    auth = optional(object({
+      serviceAccounts = optional(list(object({
+        provider = optional(string)
+        name = string
+        # NOTE: NOT SUPPORTED BY THE AWS MODULE
+        roles = optional(list(string))
+      })))
 
-    # NOTE: NOT SUPPORTED BY THE AWS MODULE
-    # apiKeys = optional(list(object({
-    #   name = string
-    #   services = list(string)
-    #   origins = list(string)
-    # })))
+      # NOTE: NOT SUPPORTED BY THE AWS MODULE
+      apiKeys = optional(list(object({
+        provider = optional(string)
+        name = string
+        origins = optional(list(string))
+        services = list(object({
+          name = string
+          methods = optional(list(string))
+        }))
+      })))
+    }))
 
     ingress = optional(object({
       enabled = optional(bool)

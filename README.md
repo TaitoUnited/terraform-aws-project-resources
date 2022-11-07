@@ -7,6 +7,11 @@ stack:
   uptimeEnabled: true
   backupEnabled: true
 
+  auth:
+    serviceAccounts:
+      - name: my-project-prod-server
+      - name: my-project-prod-worker
+
   ingress:
     enabled: true
     class: cloudfront

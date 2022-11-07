@@ -15,9 +15,9 @@
  */
 
 resource "aws_iam_user" "service_account" {
-  for_each = {for item in local.serviceAccounts: item.id => item}
+  for_each = local.serviceAccountsById
 
-  name  = each.value.id
+  name  = each.value.name
 }
 
 resource "aws_iam_user" "cicd" {

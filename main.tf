@@ -38,11 +38,21 @@ locals {
 
   secret_name_path = var.secret_name_path != "" ? var.secret_name_path : "/${var.zone_name}/${var.namespace}"
 
-  serviceAccounts = (
-    var.create_service_accounts
-    ? coalesce(local.resources.serviceAccounts, [])
-    : []
-  )
+  # API keys
+
+  apiKeysById = {
+    for apiKey in coalesce(try(var.resources.auth.apiKeys, []), []):
+    "${apiKey.name}-${coalesce(apiKey.provider, "aws")}" => apiKey
+    if var.create_api_keys && coalesce(apiKey.provider, "aws") == "aws"
+  }
+
+  # Service accounts
+
+  serviceAccountsById = {
+    for acc in coalesce(try(var.resources.auth.serviceAccounts, []), []):
+    "${acc.name}-${coalesce(acc.provider, "aws")}" => acc
+    if var.create_service_accounts && coalesce(acc.provider, "aws") == "aws"
+  }
 
   ingress = local.resources.ingress
 
