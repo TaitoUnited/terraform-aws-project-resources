@@ -96,7 +96,7 @@ stack:
           batchSize: 5
       cronJobs:
         - name: refresh
-          schedule: cron(0 * * * *)
+          schedule: cron(0 * * * ? *)
           command: refresh
 
     dlq:
