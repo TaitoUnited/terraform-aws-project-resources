@@ -27,8 +27,8 @@ resource "aws_cloudwatch_event_target" "function_cron_job" {
   arn  = aws_lambda_function.function[each.value.function.id].arn
   rule = aws_cloudwatch_event_rule.function_cron_job[each.key].name
   input = jsonencode({
-    command = aws_cloudwatch_event_rule.function_cron_job[each.key].command
-  })  
+    command = each.value.command
+  })
 }
 
 resource "aws_lambda_permission" "allow_cloudwatch" {
