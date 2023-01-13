@@ -22,7 +22,7 @@ resource "aws_route53_health_check" "uptimez" {
   type              = "HTTPS"
   resource_path     = each.value.uptimePath
   failure_threshold = "3"
-  request_interval  = "10"
+  request_interval  = "30"
   measure_latency   = true
   regions           = [
     "sa-east-1", "us-west-1", "us-west-2", "ap-northeast-1",
