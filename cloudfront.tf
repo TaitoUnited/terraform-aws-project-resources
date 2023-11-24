@@ -66,6 +66,12 @@ resource "aws_cloudfront_distribution" "distribution" {
     domain_name = data.aws_s3_bucket.static_assets.bucket_regional_domain_name
     origin_id   = local.s3_origin_id
     origin_path = "/${var.static_assets_path}/${var.build_image_tag}/client"
+
+    # Added to mitigate this problem: https://github.com/hashicorp/terraform-provider-aws/issues/24359#issuecomment-1508611793
+    origin_shield {
+      enabled              = false
+      origin_shield_region = "eu-west-1"
+    }
   }
 
   # S3 as default origin
