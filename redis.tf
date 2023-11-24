@@ -31,11 +31,11 @@ resource "aws_elasticache_replication_group" "redis" {
   for_each                      = {for item in local.redisDatabasesById: item.id => item}
 
   automatic_failover_enabled    = coalesce(each.value.replicas, 1) > 1
-  availability_zones            = coalesce(each.value.zones, null)
+  preferred_cache_cluster_azs   = coalesce(each.value.zones, null)
   replication_group_id          = each.value.name
-  replication_group_description = each.value.name
+  description                   = each.value.name
   node_type                     = coalesce(each.value.machineType, "cache.t2.small")
-  number_cache_clusters         = coalesce(each.value.replicas, 1)
+  num_cache_clusters            = coalesce(each.value.replicas, 1)
   parameter_group_name          = "default.redis5.0"
   port                          = 6379
 
@@ -46,7 +46,7 @@ resource "aws_elasticache_replication_group" "redis" {
   auth_token                    = data.aws_ssm_parameter.redis_secret[each.key].value
 
   lifecycle {
-    ignore_changes = [ number_cache_clusters ]
+    ignore_changes = [ num_cache_clusters ]
   }
 }
 
