@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
+// TODO: Remove providers, however useast1 needs to be passed as alias?
 provider "aws" {
   region  = var.region
-  profile = var.user_profile
 }
 
 provider "aws" {
   alias   = "useast1"
   region  = "us-east-1"
-  profile = var.user_profile
 }
 
 locals {
