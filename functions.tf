@@ -54,7 +54,7 @@ resource "aws_lambda_function" "function" {
   runtime = (
     each.value.runtime != ""
       ? each.value.runtime
-      : "nodejs14.x"
+      : "nodejs20.x"
   )
 
   memory_size = (

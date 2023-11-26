@@ -38,7 +38,7 @@ stack:
       path: /api
       uptimePath: /api/uptimez
       timeout: 3
-      runtime: nodejs14.x
+      runtime: nodejs20.x
       memoryRequest: 128
       tags:
         customtag: customvalue
@@ -77,7 +77,7 @@ stack:
       type: function
       concurrency: 5
       timeout: 100
-      runtime: nodejs14.x
+      runtime: nodejs20.x
       memoryRequest: 512
       deadLetterQueue: my-project-prod-dlq
       # deadLetterTopic:
