@@ -251,6 +251,9 @@ data "aws_iam_policy_document" "cicd_deploy" {
       "ecr:CompleteLayerUpload",
       "ecr:TagResource",
 
+      # AWS certificate manager
+      "acm:GetCertificate",
+
       # Cloudfront
       "cloudfront:UpdateDistribution",
       "cloudfront:CreateInvalidation",
