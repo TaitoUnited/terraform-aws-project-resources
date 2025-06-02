@@ -24,7 +24,7 @@ resource "aws_iam_role" "role" {
 }
 
 resource "aws_iam_role_policy" "role_aws_policy" {
-  for_each = {for item in local.rolesWithPolicyById: item.id => item}
+  for_each = {for item in local.rolesWithPolicyById: item.name => item}
 
   role = aws_iam_role.role[each.key].id
   policy = jsonencode(local.rolesWithPolicyById[each.key].awsPolicy)
