@@ -353,9 +353,8 @@ variable "resources" {
         roles = optional(list(string))
       })))
 
-      roles = optional(list(object({
+      roles = optional(map(object({
         provider = optional(string)
-        name = string
         assumeRolePolicy = optional(object({
           Version = string
           Statement = list(object({

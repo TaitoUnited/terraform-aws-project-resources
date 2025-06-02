@@ -12,7 +12,7 @@ stack:
       - name: my-project-prod-server
       - name: my-project-prod-worker
     roles:
-      - name: iot-publisher
+      iot-publisher:
         assumeRolePolicy:
           Version: '2012-10-17'
           Statement:

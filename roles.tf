@@ -18,7 +18,9 @@ resource "aws_iam_role" "role" {
   for_each = local.rolesById
 
   name = each.value.name
-  assume_role_policy = jsonencode(each.value.assumeRolePolicy)
+  assume_role_policy = jsonencode(
+    try(each.value.assumeRolePolicy, local.default_assume_role_policy)
+  )
 }
 
 resource "aws_iam_role" "gateway" {

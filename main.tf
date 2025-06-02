@@ -25,6 +25,18 @@ provider "aws" {
 }
 
 locals {
+  default_assume_role_policy = {
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  }  
   # Set defaults
   resources = var.resources
 
@@ -56,8 +68,8 @@ locals {
   # Roles
 
   rolesById = {
-    for role in coalesce(try(var.resources.auth.roles, []), []):
-    "${role.name}-${coalesce(role.provider, "aws")}" => role
+    for name, role in coalesce(local.resources.auth.roles, {}):
+    "${role.name}-${coalesce(role.provider, "aws")}" => merge(role, { name: name })
     if var.create_roles && coalesce(role.provider, "aws") == "aws"
   }
 
