@@ -73,6 +73,14 @@ locals {
     if var.create_roles && coalesce(role.provider, "aws") == "aws"
   }
 
+  rolesWithPolicyById = {
+    for id, role in local.rolesById:
+    id => role
+    if var.create_roles && role.awsPolicy != null
+  }
+
+  # Ingress
+
   ingress = local.resources.ingress
 
   domains = [

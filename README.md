@@ -13,7 +13,7 @@ stack:
       - name: my-project-prod-worker
     roles:
       my-role: {}
-      iot-publisher:
+      notification-publisher:
         assumeRolePolicy:
           Version: '2012-10-17'
           Statement:
@@ -23,6 +23,13 @@ stack:
               Principal:
                 AWS:
                   - arn:aws:iam::111111111111:role/LambdaRoleOfAnotherAccount
+        awsPolicy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sns:Publish
+              Resource: 'arn:aws:sns:::my-project-prod-notifications'
 
   ingress:
     enabled: true

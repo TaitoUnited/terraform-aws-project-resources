@@ -23,6 +23,14 @@ resource "aws_iam_role" "role" {
   )
 }
 
+resource "aws_iam_role_policy" "role_aws_policy" {
+  for_each = {for item in local.rolesWithPolicyById: item.id => item}
+
+  role = aws_iam_role.role[each.key].id
+  policy = jsonencode(local.rolesWithPolicyById[each.key].awsPolicy)
+}
+
+
 resource "aws_iam_role" "gateway" {
   count = var.create_service_accounts ? 1 : 0
   name = "${var.project}-${var.env}-gateway"
