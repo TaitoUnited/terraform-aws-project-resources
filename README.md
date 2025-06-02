@@ -11,6 +11,17 @@ stack:
     serviceAccounts:
       - name: my-project-prod-server
       - name: my-project-prod-worker
+    roles:
+      - name: iot-publisher
+        assumeRolePolicy:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - sts:AssumeRole
+              Principal:
+                AWS:
+                  - arn:aws:iam::111111111111:role/LambdaRoleOfAnotherAccount
 
   ingress:
     enabled: true
@@ -173,10 +184,6 @@ stack:
         - id: my-project-prod-worker
       objectViewers:
         - id: jack.doe
-
-  serviceAccounts:
-    - id: my-project-prod-worker
-
 ```
 
 With `create_*` variables you can choose which resources are created/updated in which phase. For example, you can choose to update some of the resources manually when the environment is created or updated:
@@ -192,6 +199,7 @@ With `create_*` variables you can choose which resources are created/updated in 
   create_queues                       = true
   create_topics                       = true
   create_service_accounts             = true
+  create_roles                        = true
   create_uptime_checks                = true
   create_container_image_repositories = true
 ```

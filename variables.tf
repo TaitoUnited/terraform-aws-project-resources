@@ -107,6 +107,12 @@ variable "create_service_accounts" {
   description = "If true, service accounts are created."
 }
 
+variable "create_roles" {
+  type        = bool
+  default     = false
+  description = "If true, roles are created."
+}
+
 # NOTE: NOT SUPPORTED BY THE AWS MODULE
 # variable "create_service_account_roles" {
 #   type        = bool
@@ -345,6 +351,19 @@ variable "resources" {
         name = string
         # NOTE: NOT SUPPORTED BY THE AWS MODULE
         roles = optional(list(string))
+      })))
+
+      roles = optional(list(object({
+        provider = optional(string)
+        name = string
+        assumeRolePolicy = optional(object({
+          Version = string
+          Statement = list(object({
+            Effect = string
+            Action = list(string)
+            Principal = map(any)
+          }))
+        }))
       })))
 
       # NOTE: NOT SUPPORTED BY THE AWS MODULE

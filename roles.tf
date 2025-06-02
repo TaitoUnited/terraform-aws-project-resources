@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
+resource "aws_iam_role" "role" {
+  for_each = local.rolesById
+
+  name = each.value.name
+  assume_role_policy = jsonencode(each.value.assumeRolePolicy)
+}
+
 resource "aws_iam_role" "gateway" {
   count = var.create_service_accounts ? 1 : 0
   name = "${var.project}-${var.env}-gateway"

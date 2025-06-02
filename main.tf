@@ -53,6 +53,14 @@ locals {
     if var.create_service_accounts && coalesce(acc.provider, "aws") == "aws"
   }
 
+  # Roles
+
+  rolesById = {
+    for role in coalesce(try(var.resources.auth.roles, []), []):
+    "${role.name}-${coalesce(role.provider, "aws")}" => role
+    if var.create_roles && coalesce(role.provider, "aws") == "aws"
+  }
+
   ingress = local.resources.ingress
 
   domains = [
