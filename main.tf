@@ -69,7 +69,7 @@ locals {
 
   rolesById = {
     for name, role in coalesce(local.resources.auth.roles, {}):
-    "${role.name}-${coalesce(role.provider, "aws")}" => merge(role, { name: name })
+    "${name}-${coalesce(role.provider, "aws")}" => merge(role, { name: name })
     if var.create_roles && coalesce(role.provider, "aws") == "aws"
   }
 
