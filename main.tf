@@ -204,7 +204,7 @@ locals {
   queuesWithPolicyById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_queues && service.type == "queue" && service.awsPolicy != null
+    if var.create_queues && service.type == "queue" && service.accessPolicy != null
   }
 
   topicsById = {

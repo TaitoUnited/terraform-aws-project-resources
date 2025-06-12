@@ -128,7 +128,7 @@ stack:
       queueType: fifo
       visibilityTimeout: 600
       # Example: Allow role of another account to send directly without assume role
-      awsPolicy:
+      accessPolicy:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow

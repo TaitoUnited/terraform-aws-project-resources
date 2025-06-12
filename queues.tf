@@ -32,5 +32,5 @@ resource "aws_sqs_queue_policy" "sqs_aws_policy" {
   for_each = {for item in local.queuesWithPolicyById: item.id => item}
 
   queue_url = aws_sqs_queue.queue[each.key].id
-  policy = jsonencode(local.queuesWithPolicyById[each.key].awsPolicy)  
+  policy = jsonencode(local.queuesWithPolicyById[each.key].accessPolicy)  
 }

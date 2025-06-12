@@ -437,8 +437,15 @@ variable "resources" {
         Statement = list(object({
           Effect = string
           Action = list(string)
-          Principal = optional(map(any))
-          Resource = optional(string)
+          Resource = string
+        }))
+      }))
+      accessPolicy = optional(object({
+        Version = string
+        Statement = list(object({
+          Effect = string
+          Action = list(string)
+          Principal = map(any)
         }))
       }))
 
