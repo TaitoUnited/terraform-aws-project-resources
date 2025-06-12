@@ -437,7 +437,8 @@ variable "resources" {
         Statement = list(object({
           Effect = string
           Action = list(string)
-          Resource = string
+          Principal = optional(map(any))
+          Resource = optional(string)
         }))
       }))
 

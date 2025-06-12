@@ -127,6 +127,17 @@ stack:
       name: my-project-prod-jobs.fifo
       queueType: fifo
       visibilityTimeout: 600
+      # Example: Allow role of another account to send directly without assume role
+      awsPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+              - sqs:GetQueueAttributes
+            Principal:
+              AWS:
+                - arn:aws:iam::111111111111:role/roleOfAnotherAccount
 
     notifications:
       type: topic
