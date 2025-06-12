@@ -23,7 +23,7 @@ stack:
               Principal:
                 AWS:
                   - arn:aws:iam::111111111111:role/LambdaRoleOfAnotherAccount
-        awsPolicy:
+        permissionPolicy:
           Version: '2012-10-17'
           Statement:
             - Effect: Allow
@@ -77,8 +77,8 @@ stack:
         REDIS_PORT: 6379
         S3_BUCKET: my-project-prod
         S3_REGION: us-east-1
-      # Example: Allow bucket/topic access with awsPolicy instead of service account
-      awsPolicy:
+      # Example: Allow bucket/topic access with permissionPolicy instead of service account
+      permissionPolicy:
         Version: '2012-10-17'
         Statement:
           - Effect: Allow
@@ -151,7 +151,7 @@ stack:
       replicas: 2
       memoryRequest: 128
       secrets:
-        # Example: Allow bucket/topic access with service account instead of awsPolicy
+        # Example: Allow bucket/topic access with service account instead of permissionPolicy
         SERVICE_ACCOUNT_KEY: my-project-prod-worker-serviceaccount.key
       env:
         TOPIC_NOTIFICATIONS: my-project-prod-notifications

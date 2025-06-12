@@ -363,7 +363,7 @@ variable "resources" {
             Principal = map(any)
           }))
         }))
-        awsPolicy = optional(object({
+        permissionPolicy = optional(object({
           Version = string
           Statement = list(object({
             Effect = string
@@ -432,7 +432,7 @@ variable "resources" {
         schedule = string
         command = string
       })))
-      awsPolicy = optional(object({
+      permissionPolicy = optional(object({
         Version = string
         Statement = list(object({
           Effect = string

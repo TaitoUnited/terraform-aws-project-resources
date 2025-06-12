@@ -76,7 +76,7 @@ locals {
   rolesWithPolicyById = {
     for id, role in local.rolesById:
     id => role
-    if var.create_roles && role.awsPolicy != null
+    if var.create_roles && role.permissionPolicy != null
   }
 
   # Ingress
@@ -134,7 +134,7 @@ locals {
   functionsWithPolicyById = {
     for name, service in local.servicesById:
     name => service
-    if var.create_function_permissions && service.type == "function" && service.awsPolicy != null
+    if var.create_function_permissions && service.type == "function" && service.permissionPolicy != null
   }
 
   functionCronJobsById = {

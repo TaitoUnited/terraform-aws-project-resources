@@ -108,7 +108,7 @@ resource "aws_iam_role_policy" "function_aws_policy" {
   for_each = {for item in local.functionsWithPolicyById: item.id => item}
 
   role = aws_iam_role.function[each.key].id
-  policy = jsonencode(local.functionsForPermissionsById[each.key].awsPolicy)
+  policy = jsonencode(local.functionsForPermissionsById[each.key].permissionPolicy)
 }
 
 resource "aws_iam_role_policy_attachment" "function_vpcaccessor" {
