@@ -32,5 +32,16 @@ resource "aws_sqs_queue_policy" "sqs_aws_policy" {
   for_each = {for item in local.queuesWithPolicyById: item.id => item}
 
   queue_url = aws_sqs_queue.queue[each.key].id
-  policy = jsonencode(local.queuesWithPolicyById[each.key].accessPolicy)  
+
+  policy = jsonencode(
+    merge(
+      local.queuesWithPolicyById[each.key].accessPolicy,
+      { 
+        Statement = [
+          for statement in local.queuesWithPolicyById[each.key].accessPolicy.Statement:
+          merge(statement, { Resource: aws_sqs_queue.queue[each.key].arn })
+        ]
+      }
+    )
+  )
 }
