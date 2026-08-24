@@ -185,6 +185,7 @@ data "aws_iam_policy_document" "cicd_deploy" {
       # Logs
       "logs:ListTagsLogGroup",
       "logs:DescribeLogGroups",
+      "logs:ListTagsForResource",
 
       # Queues
       "sqs:ListQueues",
