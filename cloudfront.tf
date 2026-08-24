@@ -98,9 +98,9 @@ resource "aws_cloudfront_distribution" "distribution" {
 
   # API Gateway (functions)
   dynamic "origin" {
-    for_each = length(aws_api_gateway_deployment.gateway) > 0 ? [ 1 ] : []
+    for_each = length(aws_api_gateway_stage.gateway) > 0 ? [ 1 ] : []
     content {
-      domain_name = replace(aws_api_gateway_deployment.gateway[0].invoke_url, "/^https?://([^/]*).*/", "$1")
+      domain_name = replace(aws_api_gateway_stage.gateway[0].invoke_url, "/^https?://([^/]*).*/", "$1")
       origin_id   = local.gateway_origin_id
       origin_path = "/stage"
 

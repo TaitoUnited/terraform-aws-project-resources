@@ -23,7 +23,7 @@ output "stage_name" {
 }
 
 output "base_url" {
-  value = aws_api_gateway_deployment.gateway[*].invoke_url
+  value = aws_api_gateway_stage.gateway[*].invoke_url
 }
 
 output "domain" {
